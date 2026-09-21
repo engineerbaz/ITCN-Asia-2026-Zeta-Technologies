@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeta CloudHub — Public vs Private Cloud TCO Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#16294A; --navy-2:#1F3864; --teal:#1F7A8C; --teal-soft:#E3F0F3;
+  --paper:#F5F7FA; --card:#FFFFFF; --line:#DEE5EC;
+  --ink:#1C2733; --muted:#5B6B7C;
+  --gold:#FFF2CC; --gold-line:#E8C86A;
+  --red:#C0504D; --red-soft:#F9ECEB;
+  --green:#1E7B34; --green-soft:#E5F3E8;
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.55;padding-bottom:76px}
+h1,h2,h3,.num{font-family:'Space Grotesk','Inter',sans-serif}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- header ---------- */
+header{background:var(--navy);color:#fff;padding:26px 0 0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand .mark{font-family:'Space Grotesk';font-weight:700;font-size:22px;letter-spacing:.5px}
+.brand .mark span{color:#7FD0E0}
+.brand .sub{font-size:12px;color:#AEC3D8;letter-spacing:.06em;text-transform:uppercase}
+header h1{font-size:26px;font-weight:600;margin:14px 0 4px;letter-spacing:-.01em}
+header p.tag{color:#C6D4E4;font-size:13px;max-width:720px}
+nav{display:flex;gap:2px;margin-top:20px;overflow-x:auto}
+nav a{color:#C6D4E4;text-decoration:none;font-size:13px;font-weight:500;padding:11px 16px;border-radius:8px 8px 0 0;white-space:nowrap}
+nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+nav a.active{background:var(--paper);color:var(--navy);font-weight:600}
+.hdr-actions{float:right;margin-top:-58px}
+.btn{border:0;border-radius:8px;padding:9px 16px;font:600 13px 'Inter';cursor:pointer}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff}
+.btn-ghost:hover{background:rgba(255,255,255,.22)}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-teal:hover{background:#1A6B7B}
+
+/* ---------- sections ---------- */
+section{max-width:1180px;margin:26px auto;padding:0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.card-h h2{font-size:16px;font-weight:600;color:var(--navy)}
+.card-h .hint{font-size:12px;color:var(--muted)}
+.card-b{padding:18px}
+.sec-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+
+/* ---------- KPI strip ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:22px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.kpi .lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.kpi .val{font-family:'Space Grotesk';font-size:24px;font-weight:700;color:var(--navy);margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi.win .val{color:var(--green)}
+.kpi.win{background:var(--green-soft);border-color:#BFDCC6}
+.kpi .sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ---------- tables ---------- */
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--navy-2);color:#fff;text-align:left;font-weight:600;padding:9px 12px;font-size:12px;white-space:nowrap}
+td{padding:7px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+.sec-row td{background:var(--teal);color:#fff;font-weight:600;font-size:12.5px;letter-spacing:.03em}
+.sub-row td{background:var(--teal-soft);font-weight:600;color:var(--navy)}
+.tot-row td{background:var(--navy-2);color:#fff;font-weight:700;font-size:14px}
+.pkr-row td{background:var(--green-soft);font-weight:600;color:var(--green)}
+input[type=number], select{
+  font:500 13px 'Inter';color:#0645AD;background:var(--gold);
+  border:1px solid var(--gold-line);border-radius:6px;padding:6px 8px;width:100%
+}
+input[type=number]{text-align:right;font-variant-numeric:tabular-nums}
+input:focus,select:focus{outline:2px solid var(--teal);outline-offset:1px}
+.qty{max-width:92px}
+.cost-in{max-width:130px}
+select{max-width:100%;min-width:210px}
+.row-x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 6px;border-radius:5px}
+.row-x:hover{background:var(--red-soft);color:var(--red)}
+.add-row{margin:10px 0 0;background:var(--teal-soft);color:var(--teal);border:1px dashed var(--teal)}
+.add-row:hover{background:#D3E8ED}
+.legend-edit{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.legend-edit .sw{width:14px;height:14px;border-radius:4px;background:var(--gold);border:1px solid var(--gold-line)}
+
+/* ---------- assumptions ---------- */
+.asm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.asm{border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.asm label{display:block;font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.asm .note{font-size:11px;color:var(--muted);margin-top:6px}
+.asm .unit-wrap{display:flex;align-items:center;gap:8px}
+.asm .unit{font-size:12px;color:var(--muted);white-space:nowrap}
+
+/* ---------- charts ---------- */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.chart-card h3{font-size:14px;color:var(--navy);margin-bottom:10px}
+.chart-wrap{position:relative;height:290px}
+@media(max-width:860px){.chart-grid{grid-template-columns:1fr}}
+
+/* ---------- conclusion ---------- */
+.points{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pt{border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:8px;padding:14px 16px;background:var(--card)}
+.pt h3{font-size:13.5px;color:var(--navy);margin-bottom:5px}
+.pt p{font-size:12.5px;color:var(--muted)}
+@media(max-width:820px){.points{grid-template-columns:1fr}}
+.verdict{margin-top:16px;background:var(--green-soft);border:1px solid #BFDCC6;border-radius:var(--radius);padding:18px;font-size:13.5px;color:#173B21}
+.verdict strong{color:var(--green)}
+
+/* ---------- sticky verdict bar (signature) ---------- */
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--navy);color:#fff;z-index:50;box-shadow:0 -4px 18px rgba(22,41,74,.25)}
+#bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 22px;flex-wrap:wrap}
+#bar .l{font-size:12px;color:#AEC3D8;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+#bar .v{font-family:'Space Grotesk';font-size:22px;font-weight:700;color:#8FE3A4;font-variant-numeric:tabular-nums}
+#bar .m{font-size:13px;color:#C6D4E4;font-variant-numeric:tabular-nums}
+#bar .cur-toggle{display:flex;background:rgba(255,255,255,.12);border-radius:8px;overflow:hidden}
+#bar .cur-toggle button{border:0;background:none;color:#C6D4E4;font:600 12px 'Inter';padding:7px 14px;cursor:pointer}
+#bar .cur-toggle button.on{background:var(--teal);color:#fff}
+
+footer{max-width:1180px;margin:34px auto 0;padding:0 22px;font-size:11.5px;color:var(--muted)}
+
+/* ---------- print options card ---------- */
+.popt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.popt label.fld{display:block;font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.popt input[type=text]{font:500 13px 'Inter';color:#0645AD;background:var(--gold);border:1px solid var(--gold-line);border-radius:6px;padding:7px 9px;width:100%}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);padding:6px 0;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--teal);cursor:pointer}
+.chk .cnote{font-size:11px;color:var(--muted)}
+
+/* ---------- printable report ---------- */
+#report{display:none}
+@media print{
+  body{padding-bottom:0;background:#fff;font-size:12px}
+  header,section,footer,#bar{display:none!important}
+  #report{display:block;max-width:100%;color:#1C2733}
+  #report .rp-cover{border-bottom:4px solid var(--teal);padding-bottom:14px;margin-bottom:18px}
+  #report .rp-brand{font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--navy-2);letter-spacing:.4px}
+  #report .rp-brand span{color:var(--teal)}
+  #report h1{font-size:22px;color:var(--navy-2);margin:8px 0 4px;letter-spacing:-.01em}
+  #report .rp-meta{display:flex;gap:26px;flex-wrap:wrap;font-size:11px;color:#5B6B7C;margin-top:8px}
+  #report .rp-meta b{color:var(--navy-2)}
+  #report h2{font-family:'Space Grotesk';font-size:15px;color:var(--navy-2);border-bottom:2px solid var(--teal);
+    padding-bottom:5px;margin:22px 0 10px;break-after:avoid}
+  #report h2 .no{color:var(--teal);margin-right:8px}
+  #report p{font-size:12px;margin-bottom:8px}
+  #report table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px}
+  #report th{background:var(--navy-2)!important;color:#fff!important;padding:6px 8px;text-align:left;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #report td{padding:5px 8px;border-bottom:1px solid #D8DFE7}
+  #report td.r,#report th.r{text-align:right;font-variant-numeric:tabular-nums}
+  #report tr.rp-sec td{background:#E3F0F3!important;color:var(--navy-2);font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #report tr.rp-sub td{background:#F0F4F8!important;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #report tr.rp-tot td{background:var(--navy-2)!important;color:#fff!important;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #report tr.rp-sav td{background:#E5F3E8!important;color:var(--green);font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #report .rp-kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  #report .rp-kpi{border:1px solid #C9D4DF;border-radius:8px;padding:8px 12px;flex:1;min-width:150px}
+  #report .rp-kpi .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:#5B6B7C;font-weight:600}
+  #report .rp-kpi .v{font-family:'Space Grotesk';font-size:16px;font-weight:700;color:var(--navy-2);font-variant-numeric:tabular-nums}
+  #report .rp-kpi.win{background:#E5F3E8!important;border-color:#BFDCC6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #report .rp-kpi.win .v{color:var(--green)}
+  #report .rp-charts{display:flex;flex-wrap:wrap;gap:2%}
+  #report .rp-chart{width:49%;margin-bottom:12px;break-inside:avoid}
+  #report .rp-chart.full{width:100%}
+  #report .rp-chart h3{font-size:11.5px;color:var(--navy-2);margin-bottom:4px}
+  #report .rp-chart img{width:100%;border:1px solid #E0E6EC;border-radius:6px}
+  #report .rp-pt{margin-bottom:8px;break-inside:avoid}
+  #report .rp-pt b{color:var(--navy-2);font-size:12px}
+  #report .rp-verdict{border:1px solid #BFDCC6;background:#E5F3E8!important;border-radius:8px;padding:12px;
+    font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #report .rp-verdict strong{color:var(--green)}
+  #report .pb{break-before:page}
+  #report .avoid{break-inside:avoid}
+  #report .rp-foot{margin-top:16px;padding-top:8px;border-top:1px solid #D8DFE7;font-size:9.5px;color:#5B6B7C}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark">ZETA <span>CloudHub</span></div>
+      <div class="sub">Public Cloud &nbsp;·&nbsp; Business Case Builder</div>
+    </div>
+    <div class="hdr-actions">
+      <button class="btn btn-ghost" onclick="resetAll()">Reset to defaults</button>
+      <button class="btn btn-teal" onclick="printReport()">Print / PDF report</button>
+    </div>
+    <h1>Public vs Private Cloud — 5-Year TCO Calculator</h1>
+    <p class="tag">Size the customer's workload on Zeta CloudHub, model the equivalent on-premises build, and watch the five-year business case update live. Yellow fields are editable — everything else recalculates instantly.</p>
+    <nav id="nav">
+      <a href="#s-asm">Assumptions</a>
+      <a href="#s-pub">Zeta CloudHub BoQ</a>
+      <a href="#s-pri">Private Cloud Build</a>
+      <a href="#s-tco">5-Year TCO &amp; Charts</a>
+      <a href="#s-con">Conclusion</a>
+    </nav>
+  </div>
+</header>
+
+<section>
+  <div class="kpis" id="kpis"></div>
+</section>
+
+<!-- ================= ASSUMPTIONS ================= -->
+<section id="s-asm">
+  <div class="sec-eyebrow">Step 1</div>
+  <div class="card">
+    <div class="card-h"><h2>Global Assumptions</h2>
+      <span class="legend-edit"><span class="sw"></span> Yellow = editable per customer</span></div>
+    <div class="card-b">
+      <div class="asm-grid">
+        <div class="asm"><label>USD → PKR exchange rate</label>
+          <div class="unit-wrap"><input type="number" id="a-fx" value="282" min="1" step="0.5"><span class="unit">Rs / $</span></div>
+          <div class="note">State Bank interbank rate — update at proposal time.</div></div>
+        <div class="asm"><label>Public cloud price escalation</label>
+          <div class="unit-wrap"><input type="number" id="a-pubesc" value="5" min="0" max="30" step="0.5"><span class="unit">% / year</span></div>
+          <div class="note">Applied from Year 2 onward.</div></div>
+        <div class="asm"><label>Private cloud OPEX escalation</label>
+          <div class="unit-wrap"><input type="number" id="a-priesc" value="10" min="0" max="40" step="0.5"><span class="unit">% / year</span></div>
+          <div class="note">PKR inflation on power, staff and AMC — typically higher.</div></div>
+        <div class="asm"><label>Analysis period</label>
+          <div class="unit-wrap"><input type="number" id="a-years" value="5" min="3" max="10" step="1"><span class="unit">years</span></div>
+          <div class="note">Standard TCO horizon. Hardware refresh CAPEX repeats every 5 years.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PUBLIC CLOUD BoQ ================= -->
+<section id="s-pub">
+  <div class="sec-eyebrow">Step 2</div>
+  <div class="card">
+    <div class="card-h"><h2>Zeta CloudHub — Monthly Bill of Quantities</h2>
+      <span class="hint" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        Set margin per customer:
+        <input type="number" id="g-margin" value="40" min="0" max="90" step="1"
+          style="width:70px;text-align:right;font:600 13px 'Inter';color:#0645AD;background:var(--gold);border:1px solid var(--gold-line);border-radius:6px;padding:5px 7px"> %
+        <button class="btn btn-teal" style="padding:6px 12px" onclick="applyMargin()">Apply to all lines</button>
+      </span></div>
+    <div class="card-b tbl-scroll">
+      <table id="pub-tbl">
+        <thead><tr><th style="width:26%">Item / SKU</th><th>Unit</th><th class="r" style="width:90px">Qty</th>
+          <th class="r">Base cost / mo</th><th class="r" style="width:100px">Margin %</th>
+          <th class="r">Sell price / mo</th><th class="r">Monthly cost</th><th style="width:36px"></th></tr></thead>
+        <tbody id="pub-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRIVATE CLOUD ================= -->
+<section id="s-pri">
+  <div class="sec-eyebrow">Step 3</div>
+  <div class="card">
+    <div class="card-h"><h2>On-Premises Private Cloud — Build &amp; Run Model</h2>
+      <span class="hint">Defaults sized for the same capacity (~112 vCPU / 480 GB RAM / 7 TB) in the Pakistani market</span></div>
+    <div class="card-b tbl-scroll">
+      <table id="pri-tbl">
+        <thead><tr><th style="width:24%">Item</th><th style="width:34%">Basis</th><th>Unit</th><th class="r" style="width:100px">Qty</th><th class="r" style="width:140px">Unit cost (USD)</th><th class="r">Total</th></tr></thead>
+        <tbody id="pri-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TCO ================= -->
+<section id="s-tco">
+  <div class="sec-eyebrow">Step 4</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-h"><h2 id="tco-title">5-Year Total Cost of Ownership (USD)</h2>
+      <span class="hint">All figures recalculate live from Steps 1–3</span></div>
+    <div class="card-b tbl-scroll">
+      <table id="tco-tbl"><thead id="tco-head"></thead><tbody id="tco-body"></tbody></table>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-card"><h3>Annual cost — Zeta CloudHub vs private cloud</h3><div class="chart-wrap"><canvas id="ch-bar"></canvas></div></div>
+    <div class="chart-card"><h3>Cumulative spend over the analysis period</h3><div class="chart-wrap"><canvas id="ch-line"></canvas></div></div>
+    <div class="chart-card"><h3>Zeta CloudHub — monthly cost mix</h3><div class="chart-wrap"><canvas id="ch-mix"></canvas></div></div>
+    <div class="chart-card"><h3>Private cloud — where the CAPEX goes</h3><div class="chart-wrap"><canvas id="ch-capex"></canvas></div></div>
+  </div>
+
+  <div class="card popt" style="margin-top:16px">
+    <div class="card-h"><h2>Report &amp; print options</h2>
+      <span class="hint">Print / PDF generates a formatted report — choose what it includes</span></div>
+    <div class="card-b">
+      <div class="popt-grid">
+        <div>
+          <label class="fld">Customer / opportunity name</label>
+          <input type="text" id="rp-cust" placeholder="e.g. ABC Bank Limited" value="">
+        </div>
+        <div>
+          <label class="fld">Prepared by</label>
+          <input type="text" id="rp-by" placeholder="Name, designation" value="Presales Team, Zeta Technologies (Pvt.) Ltd.">
+        </div>
+        <div>
+          <label class="fld">Charts to include in the report</label>
+          <label class="chk"><input type="checkbox" id="pc-bar" checked> Annual cost comparison <span class="cnote">(bar)</span></label>
+          <label class="chk"><input type="checkbox" id="pc-line" checked> Cumulative spend <span class="cnote">(line)</span></label>
+          <label class="chk"><input type="checkbox" id="pc-mix" checked> Zeta CloudHub cost mix <span class="cnote">(doughnut)</span></label>
+          <label class="chk"><input type="checkbox" id="pc-capex" checked> Private cloud CAPEX mix <span class="cnote">(doughnut)</span></label>
+        </div>
+        <div>
+          <label class="fld">Detail sections</label>
+          <label class="chk"><input type="checkbox" id="ps-boq" checked> Zeta CloudHub BoQ table</label>
+          <label class="chk"><input type="checkbox" id="ps-pri" checked> Private cloud CAPEX/OPEX tables</label>
+          <label class="chk"><input type="checkbox" id="ps-points" checked> Business case points (7)</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONCLUSION ================= -->
+<section id="s-con">
+  <div class="sec-eyebrow">The business case</div>
+  <div class="card">
+    <div class="card-h"><h2>Why Zeta CloudHub beats building a private cloud</h2></div>
+    <div class="card-b">
+      <div class="points">
+        <div class="pt"><h3>1 · Zero CAPEX, immediate value</h3><p>A private cloud demands a six-figure upfront investment — spent before the first workload ever runs. Zeta CloudHub converts this into a predictable monthly OPEX that starts small and scales with actual usage.</p></div>
+        <div class="pt"><h3>2 · Pay only for what you use</h3><p>Private clouds are sized for peak demand plus N+1 redundancy, so 40–60% of purchased capacity typically sits idle. On Zeta CloudHub you provision exactly what you need today and grow — or shrink — instantly.</p></div>
+        <div class="pt"><h3>3 · 24×7 expert operations included</h3><p>Managed OS, databases, firewalls, backup and security are delivered by certified engineers as part of the service. Replicating this in-house means hiring and retaining a round-the-clock operations team.</p></div>
+        <div class="pt"><h3>4 · No refresh cycle, no obsolescence</h3><p>On-prem hardware must be refreshed every 4–5 years, repeating the CAPEX shock, while warranties expire even earlier. The Zeta CloudHub platform is continuously upgraded at no extra cost.</p></div>
+        <div class="pt"><h3>5 · Resilience &amp; local data residency</h3><p>Data stays within Pakistan on an enterprise-grade platform with built-in redundancy, backup and DR options — meeting regulatory and data-sovereignty expectations out of the box.</p></div>
+        <div class="pt"><h3>6 · Speed to market</h3><p>A private cloud takes 3–6 months to procure, build and stabilize. Zeta CloudHub workloads can be provisioned in hours, letting the business capture opportunities instead of managing infrastructure projects.</p></div>
+        <div class="pt"><h3>7 · Financial clarity in an inflationary market</h3><p>Local power, real estate and staffing costs escalate faster than cloud pricing. Discounted Zeta CloudHub rates with a fixed price book give CFOs a clean, defensible cost line.</p></div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+  </div>
+</section>
+
+<footer>Zeta Technologies (Pvt.) Ltd. · Zeta CloudHub · Prices from Zeta price book: iVolve base cost + customer-adjustable Zeta margin · Internal presales tool — validate final commercials before customer submission.</footer>
+
+<!-- ================= PRINTABLE REPORT (generated at print time) ================= -->
+<div id="report"></div>
+
+<!-- ================= STICKY VERDICT BAR ================= -->
+<div id="bar">
+  <div class="wrap">
+    <div>
+      <div class="l" id="bar-lbl">5-Year savings with Zeta CloudHub</div>
+      <div class="v num" id="bar-save">—</div>
+    </div>
+    <div class="m" id="bar-detail">—</div>
+    <div class="cur-toggle">
+      <button id="cur-usd" class="on" onclick="setCur('USD')">USD</button>
+      <button id="cur-pkr" onclick="setCur('PKR')">PKR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ PRICE BOOK (pricing.xlsx: iVolve base cost + Zeta margin) ============ */
+/* Sell price = Base cost / (1 − margin)  →  gross-margin model, per Zeta price book   */
+const STEPS=[1,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,36,40,48];
+const PB={};
+function addSku(sku,cat,cost,m){PB[sku]={cat,cost,m};}
+const sellOf=(cost,m)=>cost/(1-Math.min(Math.max(m,0),0.95));
+STEPS.forEach(v=>addSku(`ECS-GP-${v}vCPU-${v*4}GB`,'Compute — General Purpose (1:4)',9.152*v,0.4));
+STEPS.forEach(v=>addSku(`ECS-CI-${v}vCPU-${v*2}GB`,'Compute — Compute Intense (1:2)',7.92*v,0.4));
+STEPS.forEach(v=>addSku(`ECS-MI-${v}vCPU-${v*8}GB`,'Compute — Memory Intense (1:8)',12.296*v,0.4));
+addSku('EVS-SSD (/GB)','Storage',0.064079999999999998,0.4);
+addSku('EVS-HDD (/GB)','Storage',0.026628799999999998,0.4);
+addSku('OSS (/GB)','Storage',0.013528000000000002,0.4);
+addSku('EIP (/IP)','Network',7.2,0.4);
+addSku('Egress (/GB)','Network',0.036,0.4);
+addSku('ELB (Per Vx)','Network',48,0.4);
+[['Managed OS',32],['Managed Standard DB',64],['Managed MS DB',96],['Managed Advance DB',272],
+ ['Managed FW',96],['Managed LB',64],['Managed VPN',64],['Managed NAT',64],
+ ['Managed Exchange',144],['Managed SharePoint',144],['Managed SFB',144],['Managed AD',64],
+ ['Managed Kubernetes (Master)',128],['Managed Kubernetes (Worker)',64],
+ ['Managed Rancher (Master)',128],['Managed Rancher (Worker)',64],
+ ['Managed OpenShift (Master)',112],['Managed OpenShift (Worker)',64],
+ ['Managed Backup (Server)',144],['Managed Backup (Agent)',32],
+ ['Managed C7 DR (Controller)',112],['Managed C7 DR (Agent)',32],
+ ['Managed cPanel',64],['Managed Hosting Controller',64],
+ ['Managed EPP (Server)',144],['Managed EPP (Agent)',32],['Managed Bare Metal',96]
+].forEach(([n,c])=>addSku(n,'Managed Services',c,0.2));
+
+const GROUPS=['Compute — General Purpose (1:4)','Compute — Compute Intense (1:2)','Compute — Memory Intense (1:8)','Storage','Network','Managed Services'];
+const UNIT_BY_CAT={'Storage':'GB','Network':'—','Managed Services':'Node'};
+function unitFor(sku){const c=PB[sku].cat;return c.startsWith('Compute')?'VM':(sku.includes('/GB')?'GB':sku.includes('/IP')?'IP':c==='Managed Services'?'Node':'Instance');}
+
+/* ================= DEFAULT STATE ================= */
+const DEF_PUB=[
+ {sec:'A · Compute (ECS instances)',rows:[
+   ['ECS-GP-4vCPU-16GB',4],['ECS-GP-8vCPU-32GB',4],['ECS-GP-16vCPU-64GB',2],
+   ['ECS-CI-8vCPU-16GB',2],['ECS-MI-8vCPU-64GB',2],['ECS-GP-2vCPU-8GB',2]]},
+ {sec:'B · Storage (pay-as-you-go)',rows:[['EVS-SSD (/GB)',2000],['EVS-HDD (/GB)',4000],['OSS (/GB)',1000]]},
+ {sec:'C · Network',rows:[['EIP (/IP)',4],['Egress (/GB)',500],['ELB (Per Vx)',1]]},
+ {sec:'D · Managed services (24×7 ops, per node)',rows:[
+   ['Managed OS',14],['Managed Standard DB',2],['Managed FW',1],['Managed LB',1],
+   ['Managed Backup (Server)',1],['Managed Backup (Agent)',14]]}
+];
+const DEF_CAPEX=[
+ ['Compute servers','2-socket rack servers, 32C/512GB (N+1 for HA)','Server',4,18000],
+ ['Storage array / SAN','~20 TB usable, dual controller, SSD+HDD tiers','Array',1,35000],
+ ['Network switches','ToR redundant pair + cabling & optics','Lot',1,12000],
+ ['Firewall (HA pair)','Perimeter NGFW in high availability','Pair',1,10000],
+ ['Virtualization licenses','Hypervisor / cloud platform, per socket','Socket',8,4500],
+ ['Backup software & server','Backup platform license + server','Lot',1,8000],
+ ['Racks, PDU, UPS','Rack enclosure, power distribution, UPS','Lot',1,9000],
+ ['Implementation services','Design, deployment, migration, testing','Lot',1,15000],
+ ['Additional charges','Customer-specific one-time cost — edit name & amount','Lot',1,0,true]];
+const DEF_OPEX=[
+ ['Hardware & software AMC','Support @ ~15% of hardware + license CAPEX','Year',1,17000],
+ ['DC space / colocation','Rack space, power & cooling','Month',12,900],
+ ['Internet bandwidth','Dedicated internet + public IPs','Month',12,350],
+ ['Ops & admin staff','2× infrastructure engineers','Month',24,1000],
+ ['Backup media / DR drills','Offsite copies, annual DR testing','Year',1,3000],
+ ['Miscellaneous / spares','Cables, disks, replacements','Year',1,2500],
+ ['Additional charges','Customer-specific recurring cost — edit name & amount','Year',1,0,true]];
+
+let pubState, capexState, opexState, CUR='USD';
+function loadDefaults(){
+  pubState=DEF_PUB.map(s=>({sec:s.sec,rows:s.rows.map(([sku,q])=>({sku,qty:q,m:PB[sku].m}))}));
+  capexState=DEF_CAPEX.map(r=>[...r]); opexState=DEF_OPEX.map(r=>[...r]);
+}
+loadDefaults();
+
+/* ================= FORMATTING ================= */
+const fUSD0=v=>'$'+Math.round(v).toLocaleString('en-US');
+const fUSD2=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fUSD4=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:v<1?4:2,maximumFractionDigits:v<1?4:2});
+const fPKR=v=>'Rs '+Math.round(v).toLocaleString('en-US');
+function fMoney(v,dec){const fx=A().fx;return CUR==='USD'?(dec?fUSD2(v):fUSD0(v)):fPKR(v*fx);}
+function fPKRm(v){const n=v/1e6;return 'Rs '+n.toLocaleString('en-US',{maximumFractionDigits:1})+'M';}
+
+/* ================= CORE MODEL ================= */
+function A(){return{
+  fx:+document.getElementById('a-fx').value||282,
+  pubEsc:(+document.getElementById('a-pubesc').value||0)/100,
+  priEsc:(+document.getElementById('a-priesc').value||0)/100,
+  years:Math.min(10,Math.max(3,Math.round(+document.getElementById('a-years').value||5)))};}
+
+function rowSell(r){return PB[r.sku]?sellOf(PB[r.sku].cost,r.m):0;}
+function pubTotals(){
+  const secs=pubState.map(s=>({sec:s.sec,total:s.rows.reduce((t,r)=>t+rowSell(r)*r.qty,0)}));
+  const monthly=secs.reduce((t,s)=>t+s.total,0);
+  const costBasis=pubState.reduce((t,s)=>t+s.rows.reduce((u,r)=>u+(PB[r.sku]?PB[r.sku].cost*r.qty:0),0),0);
+  return{secs,monthly,annual:monthly*12,costBasis,gp:monthly-costBasis,blended:monthly?(monthly-costBasis)/monthly:0};}
+function priTotals(){
+  const capex=capexState.reduce((t,r)=>t+r[3]*r[4],0);
+  const opex=opexState.reduce((t,r)=>t+r[3]*r[4],0);
+  return{capex,opex};}
+function model(){
+  const a=A(),pub=pubTotals(),pri=priTotals();
+  const pubY=[],priCapY=[],priOpY=[];
+  for(let y=0;y<a.years;y++){
+    pubY.push(pub.annual*Math.pow(1+a.pubEsc,y));
+    priCapY.push(y===0?pri.capex:(y===5?pri.capex:0));   // refresh at year 6 if horizon allows
+    priOpY.push(pri.opex*Math.pow(1+a.priEsc,y));}
+  const priY=priCapY.map((c,i)=>c+priOpY[i]);
+  const cum=(arr)=>arr.reduce((acc,v,i)=>{acc.push((acc[i-1]||0)+v);return acc;},[]);
+  const pubTot=pubY.reduce((t,v)=>t+v,0), priTot=priY.reduce((t,v)=>t+v,0);
+  return{a,pub,pri,pubY,priY,priCapY,priOpY,cumPub:cum(pubY),cumPri:cum(priY),pubTot,priTot,save:priTot-pubTot,savePct:priTot?(priTot-pubTot)/priTot:0};}
+
+/* ================= RENDER: PUBLIC BoQ ================= */
+function skuSelect(sel){
+  let h=`<select onchange="chSku(this)">`;
+  GROUPS.forEach(g=>{h+=`<optgroup label="${g}">`;
+    Object.keys(PB).filter(k=>PB[k].cat===g).forEach(k=>{h+=`<option ${k===sel?'selected':''}>${k}</option>`;});
+    h+=`</optgroup>`;});
+  return h+`</select>`;}
+function renderPub(){
+  const b=document.getElementById('pub-body');const a=A();let h='';
+  pubState.forEach((s,si)=>{
+    h+=`<tr class="sec-row"><td colspan="8">${s.sec}</td></tr>`;
+    s.rows.forEach((r,ri)=>{
+      const p=PB[r.sku]||{cost:0};const sp=rowSell(r);
+      h+=`<tr data-s="${si}" data-r="${ri}">
+        <td>${skuSelect(r.sku)}</td><td>${unitFor(r.sku)}</td>
+        <td class="r"><input class="qty" type="number" min="0" value="${r.qty}" oninput="chQty(this)"></td>
+        <td class="r num" style="color:var(--muted)">${fUSD4(p.cost)}</td>
+        <td class="r"><input class="qty" type="number" min="0" max="90" step="1" value="${Math.round(r.m*100)}" oninput="chMargin(this)"></td>
+        <td class="r num">${fUSD4(sp)}</td>
+        <td class="r num" style="font-weight:600">${fMoney(sp*r.qty,true)}</td>
+        <td><button class="row-x" title="Remove line" onclick="delRow(${si},${ri})">×</button></td></tr>`;});
+    const st=s.rows.reduce((t,r)=>t+rowSell(r)*r.qty,0);
+    h+=`<tr class="sub-row"><td colspan="6">Sub-total — ${s.sec.split('·')[1]||s.sec}</td><td class="r num">${fMoney(st,true)}</td>
+        <td><button class="row-x" title="Add line" style="color:var(--teal)" onclick="addRow(${si})">+</button></td></tr>`;});
+  const pub=pubTotals();
+  h+=`<tr class="tot-row"><td colspan="6">Total monthly — Zeta CloudHub (sell)</td><td class="r num">${fMoney(pub.monthly,true)}</td><td></td></tr>`;
+  h+=`<tr class="tot-row"><td colspan="6">Total annual</td><td class="r num">${fMoney(pub.annual)}</td><td></td></tr>`;
+  h+=`<tr class="pkr-row"><td colspan="6">Monthly in ${CUR==='USD'?'PKR':'USD'}</td><td class="r num">${CUR==='USD'?fPKR(pub.monthly*a.fx):fUSD2(pub.monthly)}</td><td></td></tr>`;
+  h+=`<tr style="background:#F0F2F5"><td colspan="6" style="color:var(--muted);font-size:12px">
+      <b>Internal only</b> — cost basis ${fMoney(pub.costBasis,true)}/mo · gross profit ${fMoney(pub.gp,true)}/mo · blended margin ${(pub.blended*100).toFixed(1)}%
+      &nbsp;<span style="font-size:11px">(never shown on the printed report)</span></td><td colspan="2"></td></tr>`;
+  b.innerHTML=h;}
+function chSku(el){const tr=el.closest('tr');const row=pubState[tr.dataset.s].rows[tr.dataset.r];
+  row.sku=el.value;row.m=PB[el.value].m;update();}
+function chQty(el){const tr=el.closest('tr');pubState[tr.dataset.s].rows[tr.dataset.r].qty=Math.max(0,+el.value||0);updateSoft();}
+function chMargin(el){const tr=el.closest('tr');
+  pubState[tr.dataset.s].rows[tr.dataset.r].m=Math.min(90,Math.max(0,+el.value||0))/100;updateSoft();}
+function applyMargin(){const m=Math.min(90,Math.max(0,+document.getElementById('g-margin').value||0))/100;
+  pubState.forEach(s=>s.rows.forEach(r=>r.m=m));update();}
+function delRow(si,ri){pubState[si].rows.splice(ri,1);update();}
+function addRow(si){const first=Object.keys(PB).find(k=>PB[k].cat===(si===0?GROUPS[0]:si===1?'Storage':si===2?'Network':'Managed Services'));
+  pubState[si].rows.push({sku:first,qty:1,m:PB[first].m});update();}
+
+/* ================= RENDER: PRIVATE ================= */
+function renderPri(){
+  const b=document.getElementById('pri-body');const a=A();const pri=priTotals();let h='';
+  h+=`<tr class="sec-row"><td colspan="6">A · CAPEX — one-time build cost (Year 1, repeats at hardware refresh)</td></tr>`;
+  capexState.forEach((r,i)=>{h+=priRow('cap',i,r);});
+  h+=`<tr class="sub-row"><td colspan="5">Total CAPEX
+      <button class="row-x" title="Add CAPEX line" style="color:var(--teal);font-weight:700" onclick="addPri('cap')">+ Add line</button></td>
+      <td class="r num">${fMoney(pri.capex)}</td></tr>`;
+  h+=`<tr class="sec-row"><td colspan="6">B · OPEX — annual running cost</td></tr>`;
+  opexState.forEach((r,i)=>{h+=priRow('op',i,r);});
+  h+=`<tr class="sub-row"><td colspan="5">Total annual OPEX
+      <button class="row-x" title="Add OPEX line" style="color:var(--teal);font-weight:700" onclick="addPri('op')">+ Add line</button></td>
+      <td class="r num">${fMoney(pri.opex)}</td></tr>`;
+  h+=`<tr class="tot-row"><td colspan="5">Effective monthly cost over ${a.years} years</td><td class="r num">${fMoney((pri.capex+pri.opex*a.years)/(a.years*12),true)}</td></tr>`;
+  h+=`<tr class="pkr-row"><td colspan="5">Total CAPEX in ${CUR==='USD'?'PKR':'USD'}</td><td class="r num">${CUR==='USD'?fPKR(pri.capex*a.fx):fUSD0(pri.capex)}</td></tr>`;
+  b.innerHTML=h;}
+function priRow(kind,i,r){
+  const custom=!!r[5];
+  const nameCell=custom
+    ?`<td><input type="text" value="${esc(r[0])}" style="font:600 13px 'Inter';color:#0645AD;background:var(--gold);border:1px solid var(--gold-line);border-radius:6px;padding:6px 8px;width:100%" oninput="chPriTxt('${kind}',${i},0,this.value)"></td>`
+    :`<td style="font-weight:600;color:var(--navy)">${r[0]}</td>`;
+  const basisCell=custom
+    ?`<td><input type="text" value="${esc(r[1])}" style="font:400 12px 'Inter';color:#0645AD;background:var(--gold);border:1px solid var(--gold-line);border-radius:6px;padding:6px 8px;width:100%" oninput="chPriTxt('${kind}',${i},1,this.value)"></td>`
+    :`<td style="color:var(--muted)">${r[1]}</td>`;
+  const totCell=`<td class="r num" style="font-weight:600;white-space:nowrap">${fMoney(r[3]*r[4])} <button class="row-x" title="Remove line" onclick="delPri('${kind}',${i})">×</button></td>`;
+  return`<tr>${nameCell}${basisCell}<td>${r[2]}</td>
+    <td class="r"><input class="qty" type="number" min="0" value="${r[3]}" oninput="chPri('${kind}',${i},3,this.value)"></td>
+    <td class="r"><input class="cost-in" type="number" min="0" value="${r[4]}" oninput="chPri('${kind}',${i},4,this.value)"></td>
+    ${totCell}</tr>`;}
+function chPri(kind,i,f,v){(kind==='cap'?capexState:opexState)[i][f]=Math.max(0,+v||0);updateSoft();}
+function chPriTxt(kind,i,f,v){(kind==='cap'?capexState:opexState)[i][f]=v;warmReport();}
+function addPri(kind){(kind==='cap'?capexState:opexState).push(
+  ['Additional charges',kind==='cap'?'Customer-specific one-time cost':'Customer-specific recurring cost','Lot',1,0,true]);
+  renderPri();updateSoft();}
+function delPri(kind,i){(kind==='cap'?capexState:opexState).splice(i,1);renderPri();updateSoft();}
+
+/* ================= RENDER: TCO TABLE / KPIs / VERDICT ================= */
+function renderTco(m){
+  document.getElementById('tco-title').textContent=`${m.a.years}-Year Total Cost of Ownership (${CUR})`;
+  let hh='<tr><th>Cost line</th>';
+  for(let y=1;y<=m.a.years;y++)hh+=`<th class="r">Year ${y}</th>`;
+  hh+=`<th class="r">${m.a.years}-yr total</th></tr>`;
+  document.getElementById('tco-head').innerHTML=hh;
+  const row=(lbl,arr,tot,cls='')=>{let h=`<tr class="${cls}"><td>${lbl}</td>`;arr.forEach(v=>h+=`<td class="r num">${fMoney(v)}</td>`);return h+`<td class="r num" style="font-weight:700">${fMoney(tot)}</td></tr>`;};
+  let h='';
+  h+=row('Zeta CloudHub public cloud',m.pubY,m.pubTot);
+  h+=row('Private cloud — CAPEX',m.priCapY,m.priCapY.reduce((t,v)=>t+v,0));
+  h+=row('Private cloud — OPEX',m.priOpY,m.priOpY.reduce((t,v)=>t+v,0));
+  h+=row('Private cloud — total',m.priY,m.priTot,'sub-row');
+  h+=row('Annual savings with Zeta CloudHub',m.priY.map((v,i)=>v-m.pubY[i]),m.save,'pkr-row');
+  document.getElementById('tco-body').innerHTML=h;}
+
+function renderKpis(m){
+  const k=document.getElementById('kpis');
+  const items=[
+    ['Zeta CloudHub / month',fMoney(m.pub.monthly,true),'all-inclusive, managed'],
+    [`${m.a.years}-yr TCO — Zeta CloudHub`,fMoney(m.pubTot),''],
+    [`${m.a.years}-yr TCO — private cloud`,fMoney(m.priTot),'CAPEX + escalating OPEX'],
+    ['Upfront CAPEX avoided',fMoney(m.pri.capex),'no cheque before day one'],
+    [`${m.a.years}-yr savings`,fMoney(m.save),(m.savePct*100).toFixed(1)+'% lower TCO','win']];
+  k.innerHTML=items.map(([l,v,s,w])=>`<div class="kpi ${w||''}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`).join('');}
+
+function renderVerdict(m){
+  const fx=m.a.fx;
+  document.getElementById('verdict').innerHTML=
+    `<strong>Conclusion:</strong> For the workload modelled above, Zeta CloudHub delivers the same — and in most dimensions superior — capability at
+    <strong>${fUSD0(m.save)} (${fPKRm(m.save*fx)}) lower ${m.a.years}-year TCO, a ${(m.savePct*100).toFixed(1)}% saving</strong>, while eliminating
+    ${fUSD0(m.pri.capex)} of upfront capital risk, the hardware refresh cycle and the burden of running infrastructure.
+    Building a private cloud makes the customer an infrastructure operator; adopting Zeta CloudHub keeps them focused on their business —
+    with certified local support, in-country data residency and the flexibility to scale on demand.
+    The financially and operationally sound decision is clear: <strong>Zeta CloudHub Public Cloud.</strong>`;
+  document.getElementById('bar-lbl').textContent=`${m.a.years}-year savings with Zeta CloudHub`;
+  document.getElementById('bar-save').textContent=CUR==='USD'?fUSD0(m.save):fPKR(m.save*fx);
+  document.getElementById('bar-detail').textContent=
+    `${(m.savePct*100).toFixed(1)}% lower TCO · Zeta ${fMoney(m.pubTot)} vs private ${fMoney(m.priTot)} · ${CUR==='USD'?fPKRm(m.save*fx):fUSD0(m.save)}`;}
+
+/* ================= CHARTS ================= */
+Chart.defaults.font.family="'Inter',sans-serif";Chart.defaults.font.size=12;Chart.defaults.color='#5B6B7C';
+const TEAL='#1F7A8C',RED='#C0504D',NAVY='#1F3864';
+let chBar,chLine,chMix,chCapex;
+const moneyTick=v=>CUR==='USD'?'$'+(v>=1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'k'):'Rs '+(v>=1e9?(v/1e9).toFixed(1)+'B':(v/1e6).toFixed(0)+'M');
+const moneyTip=ctx=>` ${ctx.dataset.label||ctx.label}: ${CUR==='USD'?fUSD0(ctx.parsed.y??ctx.parsed):fPKR(ctx.parsed.y??ctx.parsed)}`;
+function mkCharts(){
+  const optAx={responsive:true,maintainAspectRatio:false,animation:false,
+    plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:moneyTip}}},
+    scales:{y:{ticks:{callback:moneyTick},grid:{color:'#EDF1F5'}},x:{grid:{display:false}}}};
+  chBar=new Chart(document.getElementById('ch-bar'),{type:'bar',data:{labels:[],datasets:[
+    {label:'Zeta CloudHub',data:[],backgroundColor:TEAL,borderRadius:4},
+    {label:'Private cloud',data:[],backgroundColor:RED,borderRadius:4}]},options:optAx});
+  chLine=new Chart(document.getElementById('ch-line'),{type:'line',data:{labels:[],datasets:[
+    {label:'Zeta CloudHub (cumulative)',data:[],borderColor:TEAL,backgroundColor:TEAL,tension:.3,pointRadius:4},
+    {label:'Private cloud (cumulative)',data:[],borderColor:RED,backgroundColor:RED,tension:.3,pointRadius:4}]},options:optAx});
+  const optPie={responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:'bottom'},
+    tooltip:{callbacks:{label:c=>` ${c.label}: ${CUR==='USD'?fUSD0(c.parsed):fPKR(c.parsed)} (${(c.parsed/c.dataset.data.reduce((t,v)=>t+v,0)*100).toFixed(1)}%)`}}}};
+  chMix=new Chart(document.getElementById('ch-mix'),{type:'doughnut',data:{labels:['Compute','Storage','Network','Managed services'],
+    datasets:[{data:[],backgroundColor:[TEAL,'#5FA8B8','#9CC9D3',NAVY],borderWidth:2,borderColor:'#fff'}]},options:optPie});
+  chCapex=new Chart(document.getElementById('ch-capex'),{type:'doughnut',data:{labels:capexState.map(r=>r[0]),
+    datasets:[{data:[],backgroundColor:['#C0504D','#D3766F','#E19C93','#EDB9B0','#1F3864','#3E5A8C','#6E85AF','#A3B3CE','#1F7A8C','#5FA8B8','#9CC9D3','#E8B450'],borderWidth:2,borderColor:'#fff'}]},options:optPie});}
+function renderCharts(m){
+  const fx=CUR==='PKR'?m.a.fx:1;
+  const labels=Array.from({length:m.a.years},(_,i)=>'Year '+(i+1));
+  chBar.data.labels=labels;chBar.data.datasets[0].data=m.pubY.map(v=>v*fx);chBar.data.datasets[1].data=m.priY.map(v=>v*fx);chBar.update();
+  chLine.data.labels=labels;chLine.data.datasets[0].data=m.cumPub.map(v=>v*fx);chLine.data.datasets[1].data=m.cumPri.map(v=>v*fx);chLine.update();
+  chMix.data.datasets[0].data=m.pub.secs.map(s=>s.total*fx);chMix.update();
+  const capRows=capexState.filter(r=>r[3]*r[4]>0);
+  chCapex.data.labels=capRows.map(r=>r[0]);chCapex.data.datasets[0].data=capRows.map(r=>r[3]*r[4]*fx);chCapex.update();}
+
+/* ================= ORCHESTRATION ================= */
+function update(){renderPub();renderPri();updateSoft();}
+function updateSoft(){const m=model();renderKpis(m);renderTco(m);renderVerdict(m);renderCharts(m);warmReport();}
+function setCur(c){CUR=c;document.getElementById('cur-usd').classList.toggle('on',c==='USD');
+  document.getElementById('cur-pkr').classList.toggle('on',c==='PKR');update();}
+function resetAll(){loadDefaults();document.getElementById('a-fx').value=282;document.getElementById('a-pubesc').value=5;
+  document.getElementById('a-priesc').value=10;document.getElementById('a-years').value=5;
+  document.getElementById('g-margin').value=40;update();}
+['a-fx','a-pubesc','a-priesc','a-years'].forEach(id=>document.getElementById(id).addEventListener('input',updateSoft));
+document.getElementById('a-years').addEventListener('change',update);
+['pc-bar','pc-line','pc-mix','pc-capex','ps-boq','ps-pri','ps-points','rp-cust','rp-by']
+  .forEach(id=>document.getElementById(id).addEventListener('input',()=>warmReport()));
+
+/* qty inputs recalc totals without rebuilding tables (keeps focus); rebuild row totals on blur */
+document.getElementById('pub-body').addEventListener('focusout',e=>{if(e.target.matches('input'))renderPub();});
+document.getElementById('pri-body').addEventListener('focusout',e=>{if(e.target.matches('input'))renderPri();});
+
+/* nav active state */
+const secs=[...document.querySelectorAll('section[id]')];
+const links=[...document.querySelectorAll('#nav a')];
+window.addEventListener('scroll',()=>{let cur=secs[0].id;
+  secs.forEach(s=>{if(s.getBoundingClientRect().top<140)cur=s.id;});
+  links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+cur));},{passive:true});
+
+/* ================= PRINT REPORT BUILDER ================= */
+function chartImg(id){
+  const src=document.getElementById(id);
+  const c=document.createElement('canvas');c.width=src.width;c.height=src.height;
+  const x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,c.width,c.height);x.drawImage(src,0,0);
+  return c.toDataURL('image/png');}
+const chk=id=>document.getElementById(id).checked;
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function buildReport(){
+  const m=model(),a=m.a,pri=m.pri,pub=m.pub;
+  const cust=document.getElementById('rp-cust').value.trim();
+  const by=document.getElementById('rp-by').value.trim();
+  const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const M=(v,dec)=>fMoney(v,dec);
+  let secNo=0;const S=t=>`<h2><span class="no">${++secNo}.</span>${t}</h2>`;
+  let h='';
+
+  /* cover header */
+  h+=`<div class="rp-cover">
+    <div class="rp-brand">ZETA <span>CloudHub</span></div>
+    <h1>Public vs Private Cloud — ${a.years}-Year TCO Business Case</h1>
+    <div class="rp-meta">
+      ${cust?`<div><b>Customer:</b> ${esc(cust)}</div>`:''}
+      <div><b>Date:</b> ${today}</div>
+      ${by?`<div><b>Prepared by:</b> ${esc(by)}</div>`:''}
+      <div><b>Currency:</b> ${CUR}${CUR==='USD'?` (PKR @ Rs ${a.fx}/$)`:` (@ Rs ${a.fx}/$)`}</div>
+    </div></div>`;
+
+  /* 1. executive summary */
+  h+=S('Executive Summary');
+  h+=`<div class="rp-kpis">
+    <div class="rp-kpi"><div class="l">Zeta CloudHub / month</div><div class="v">${M(pub.monthly,true)}</div></div>
+    <div class="rp-kpi"><div class="l">${a.years}-yr TCO — Zeta CloudHub</div><div class="v">${M(m.pubTot)}</div></div>
+    <div class="rp-kpi"><div class="l">${a.years}-yr TCO — private cloud</div><div class="v">${M(m.priTot)}</div></div>
+    <div class="rp-kpi"><div class="l">Upfront CAPEX avoided</div><div class="v">${M(pri.capex)}</div></div>
+    <div class="rp-kpi win"><div class="l">${a.years}-yr savings</div><div class="v">${M(m.save)} · ${(m.savePct*100).toFixed(1)}%</div></div>
+  </div>
+  <p>For the workload sized in this document, Zeta CloudHub public cloud delivers a ${a.years}-year total cost of ownership of
+  <b>${M(m.pubTot)}</b> against <b>${M(m.priTot)}</b> for an equivalent on-premises private cloud build —
+  a saving of <b>${M(m.save)} (${(m.savePct*100).toFixed(1)}%)</b>, with zero upfront capital and 24×7 managed operations included.</p>`;
+
+  /* 2. assumptions */
+  h+=S('Assumptions');
+  h+=`<table class="avoid"><tr><th>Assumption</th><th class="r">Value</th><th>Basis</th></tr>
+   <tr><td>USD → PKR exchange rate</td><td class="r">Rs ${a.fx}</td><td>State Bank interbank rate at proposal date</td></tr>
+   <tr><td>Public cloud price escalation</td><td class="r">${(a.pubEsc*100).toFixed(1)}% / yr</td><td>Applied from Year 2 onward</td></tr>
+   <tr><td>Private cloud OPEX escalation</td><td class="r">${(a.priEsc*100).toFixed(1)}% / yr</td><td>PKR inflation on power, staff, AMC</td></tr>
+   <tr><td>Analysis period</td><td class="r">${a.years} years</td><td>Hardware refresh CAPEX repeats every 5 years</td></tr></table>`;
+
+  /* 3. BoQ — customer-facing: sell prices only, no cost/margin */
+  if(chk('ps-boq')){
+    h+=S('Proposed Zeta CloudHub Configuration (Monthly)');
+    h+=`<table><tr><th>Item / SKU</th><th>Unit</th><th class="r">Qty</th><th class="r">Unit price / mo</th><th class="r">Monthly cost</th></tr>`;
+    pubState.forEach(s=>{
+      const active=s.rows.filter(r=>PB[r.sku]&&r.qty>0);
+      if(!active.length)return;
+      h+=`<tr class="rp-sec"><td colspan="5">${esc(s.sec)}</td></tr>`;
+      active.forEach(r=>{const sp=rowSell(r);
+        h+=`<tr><td>${esc(r.sku)}</td><td>${unitFor(r.sku)}</td><td class="r">${r.qty.toLocaleString()}</td>
+         <td class="r">${fUSD4(sp)}</td><td class="r">${M(sp*r.qty,true)}</td></tr>`;});
+      const st=s.rows.reduce((t,r)=>t+rowSell(r)*r.qty,0);
+      h+=`<tr class="rp-sub"><td colspan="4">Sub-total</td><td class="r">${M(st,true)}</td></tr>`;});
+    h+=`<tr class="rp-tot"><td colspan="4">Total monthly — Zeta CloudHub</td><td class="r">${M(pub.monthly,true)}</td></tr>
+        <tr class="rp-tot"><td colspan="4">Total annual</td><td class="r">${M(pub.annual)}</td></tr></table>`;}
+
+  /* 4. private cloud */
+  if(chk('ps-pri')){
+    h+=S('Equivalent On-Premises Private Cloud Model');
+    h+=`<table><tr><th>Item</th><th>Basis</th><th>Unit</th><th class="r">Qty</th><th class="r">Unit cost</th><th class="r">Total</th></tr>
+     <tr class="rp-sec"><td colspan="6">A · CAPEX — one-time build cost</td></tr>`;
+    capexState.filter(r=>!r[5]||r[3]*r[4]>0).forEach(r=>{h+=`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td>
+      <td class="r">${r[3]}</td><td class="r">${M(r[4])}</td><td class="r">${M(r[3]*r[4])}</td></tr>`;});
+    h+=`<tr class="rp-sub"><td colspan="5">Total CAPEX</td><td class="r">${M(pri.capex)}</td></tr>
+     <tr class="rp-sec"><td colspan="6">B · OPEX — annual running cost</td></tr>`;
+    opexState.filter(r=>!r[5]||r[3]*r[4]>0).forEach(r=>{h+=`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td>
+      <td class="r">${r[3]}</td><td class="r">${M(r[4])}</td><td class="r">${M(r[3]*r[4])}</td></tr>`;});
+    h+=`<tr class="rp-sub"><td colspan="5">Total annual OPEX</td><td class="r">${M(pri.opex)}</td></tr>
+        <tr class="rp-tot"><td colspan="5">Effective monthly cost over ${a.years} years</td><td class="r">${M((pri.capex+pri.opex*a.years)/(a.years*12),true)}</td></tr></table>`;}
+
+  /* 5. TCO analysis */
+  h+=`<div class="pb"></div>`+S(`${a.years}-Year TCO Analysis`);
+  h+=`<table class="avoid"><tr><th>Cost line</th>`;
+  for(let y=1;y<=a.years;y++)h+=`<th class="r">Year ${y}</th>`;
+  h+=`<th class="r">Total</th></tr>`;
+  const line=(lbl,arr,cls='')=>{let x=`<tr class="${cls}"><td>${lbl}</td>`;arr.forEach(v=>x+=`<td class="r">${M(v)}</td>`);
+    return x+`<td class="r"><b>${M(arr.reduce((t,v)=>t+v,0))}</b></td></tr>`;};
+  h+=line('Zeta CloudHub public cloud',m.pubY);
+  h+=line('Private cloud — CAPEX',m.priCapY);
+  h+=line('Private cloud — OPEX',m.priOpY);
+  h+=line('Private cloud — total',m.priY,'rp-sub');
+  h+=line('Annual savings with Zeta CloudHub',m.priY.map((v,i)=>v-m.pubY[i]),'rp-sav');
+  h+=`</table>`;
+
+  const charts=[['pc-bar','ch-bar','Annual cost — Zeta CloudHub vs private cloud','full'],
+                ['pc-line','ch-line','Cumulative spend over the analysis period','full'],
+                ['pc-mix','ch-mix','Zeta CloudHub — monthly cost mix',''],
+                ['pc-capex','ch-capex','Private cloud — where the CAPEX goes','']];
+  const sel=charts.filter(c=>chk(c[0]));
+  if(sel.length){
+    h+=`<div class="rp-charts">`;
+    sel.forEach(([_,id,t,full])=>{h+=`<div class="rp-chart ${sel.length===1?'full':full}"><h3>${t}</h3><img src="${chartImg(id)}" alt="${t}"></div>`;});
+    h+=`</div>`;}
+
+  /* 6. business case + conclusion */
+  if(chk('ps-points')){
+    h+=S('The Business Case for Zeta CloudHub');
+    document.querySelectorAll('.pt').forEach(pt=>{
+      h+=`<div class="rp-pt"><b>${pt.querySelector('h3').textContent}</b> — ${pt.querySelector('p').textContent}</div>`;});}
+  h+=S('Conclusion & Recommendation');
+  h+=`<div class="rp-verdict">${document.getElementById('verdict').innerHTML}</div>`;
+  h+=`<div class="rp-foot">Zeta Technologies (Pvt.) Ltd. · Zeta CloudHub · Pricing per Zeta price book (iVolve base cost + Zeta margin), revisable quarterly ·
+      Figures are budgetary estimates for evaluation purposes; final commercials subject to formal proposal.</div>`;
+  document.getElementById('report').innerHTML=h;}
+
+async function printReport(){
+  updateSoft();
+  buildReport();
+  /* wait until every chart image is fully decoded before opening the print dialog —
+     this is what makes charts reliably appear in the printed report */
+  const imgs=[...document.querySelectorAll('#report img')];
+  try{await Promise.all(imgs.map(i=>i.decode?i.decode():Promise.resolve()));}catch(e){}
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  window.print();}
+
+/* keep the report warm so Ctrl+P / browser-menu printing also has loaded charts */
+let rpTimer=null;
+function warmReport(){clearTimeout(rpTimer);rpTimer=setTimeout(buildReport,700);}
+window.addEventListener('beforeprint',()=>{if(!document.getElementById('report').innerHTML)buildReport();});
+
+mkCharts();update();buildReport();
+</script>
+</body>
+</html>

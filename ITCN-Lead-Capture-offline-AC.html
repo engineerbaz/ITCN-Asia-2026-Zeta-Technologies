@@ -1,0 +1,432 @@
+<title>ITCN Lead Capture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#EEF1F6;
+    --surface:#FFFFFF;
+    --surface-2:#F6F8FB;
+    --border:#DCE1EA;
+    --text:#1A2233;
+    --text-muted:#626B80;
+    --accent:#2454C7;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#E4EBFB;
+    --hot-bg:#FBE7E2; --hot-fg:#B23A1E;
+    --warm-bg:#FBF1DA; --warm-fg:#8A6412;
+    --cold-bg:#E4EDF6; --cold-fg:#3C6489;
+    --danger:#B23A1E;
+    --shadow: 0 1px 2px rgba(20,25,40,.06), 0 8px 24px rgba(20,25,40,.05);
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10141C; --surface:#161B26; --surface-2:#1C2330;
+      --border:#2A3242; --text:#E8EBF2; --text-muted:#93A0B5;
+      --accent:#7096F2; --accent-ink:#0B1220; --accent-soft:#1D2A4A;
+      --hot-bg:#3A2019; --hot-fg:#F3907A;
+      --warm-bg:#332A14; --warm-fg:#EBC066;
+      --cold-bg:#182636; --cold-fg:#8FB3D8;
+      --danger:#F08A6E;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10141C; --surface:#161B26; --surface-2:#1C2330;
+    --border:#2A3242; --text:#E8EBF2; --text-muted:#93A0B5;
+    --accent:#7096F2; --accent-ink:#0B1220; --accent-soft:#1D2A4A;
+    --hot-bg:#3A2019; --hot-fg:#F3907A;
+    --warm-bg:#332A14; --warm-fg:#EBC066;
+    --cold-bg:#182636; --cold-fg:#8FB3D8;
+    --danger:#F08A6E;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+  }
+  .mono{ font-family:"IBM Plex Mono", ui-monospace, monospace; }
+
+  .topbar{
+    position:sticky; top:env(safe-area-inset-top,0px);
+    background:var(--surface); border-bottom:1px solid var(--border);
+    z-index:10;
+  }
+  .topbar-inner{
+    max-width:640px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px; gap:12px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .brand-mark{
+    width:36px; height:36px; border-radius:9px; flex:none;
+    background:#FFFFFF; border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    padding:4px;
+  }
+  .brand-mark img{ width:100%; height:100%; object-fit:contain; }
+  .brand-text{ display:flex; flex-direction:column; min-width:0; }
+  .brand-text strong{ font-size:13.5px; font-weight:600; line-height:1.25; }
+  .brand-sub{ font-size:11.5px; color:var(--text-muted); }
+  .topbar-stats{ display:flex; gap:14px; flex:none; }
+  .stat{ text-align:center; }
+  .stat span{ display:block; font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:18px; line-height:1.1; font-variant-numeric:tabular-nums; }
+  .stat label{ font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; }
+  .stat.hot span{ color:var(--hot-fg); }
+
+  .content{ max-width:640px; margin:0 auto; padding:16px; padding-bottom:calc(32px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:16px; }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:18px;
+  }
+  .card h2{ margin:0 0 14px; font-size:15px; font-weight:600; }
+
+  .field{ display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .field-row .field{ margin-bottom:12px; }
+  label{ font-size:12.5px; font-weight:500; color:var(--text-muted); }
+  input, select, textarea{
+    font:inherit; font-size:14.5px; color:var(--text);
+    background:var(--surface-2); border:1px solid var(--border); border-radius:9px;
+    padding:9px 11px; width:100%;
+  }
+  input:focus, select:focus, textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  textarea{ resize:vertical; min-height:44px; }
+  select{ appearance:none; background-image:linear-gradient(45deg, transparent 50%, var(--text-muted) 50%), linear-gradient(135deg, var(--text-muted) 50%, transparent 50%); background-position:calc(100% - 18px) center, calc(100% - 13px) center; background-size:5px 5px, 5px 5px; background-repeat:no-repeat; padding-right:32px; }
+
+  .btn-primary, .btn-secondary, .btn-ghost{
+    font:inherit; font-weight:600; font-size:14px; border-radius:10px; border:1px solid transparent;
+    padding:11px 16px; cursor:pointer; width:100%;
+  }
+  .btn-primary{ background:var(--accent); color:var(--accent-ink); }
+  .btn-secondary{ background:var(--accent-soft); color:var(--accent); border-color:var(--accent-soft); }
+  .btn-ghost{ background:transparent; color:var(--text-muted); border-color:var(--border); }
+  .export-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+  .hint{ font-size:11.5px; color:var(--text-muted); margin:10px 0 0; line-height:1.4; }
+
+  .list-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .list-head h2{ margin:0; }
+  .filter-chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{
+    font-size:12px; font-weight:600; border-radius:999px; padding:5px 11px;
+    border:1px solid var(--border); background:var(--surface-2); color:var(--text-muted); cursor:pointer;
+  }
+  .chip.active{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  .chip-hot{ } .chip-warm{ } .chip-cold{ }
+
+  .lead-list{ display:flex; flex-direction:column; gap:10px; }
+  .lead-card{ border:1px solid var(--border); border-radius:12px; padding:12px 13px; background:var(--surface-2); }
+  .lead-card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .lead-main{ display:flex; flex-direction:column; min-width:0; }
+  .lead-name{ font-size:14.5px; font-weight:600; }
+  .lead-company{ font-size:12.5px; color:var(--text-muted); }
+  .chip-priority{ flex:none; }
+  .chip-priority.Hot{ background:var(--hot-bg); color:var(--hot-fg); }
+  .chip-priority.Warm{ background:var(--warm-bg); color:var(--warm-fg); }
+  .chip-priority.Cold{ background:var(--cold-bg); color:var(--cold-fg); }
+  .chip-priority.none{ background:var(--border); color:var(--text-muted); }
+  .lead-meta{ margin-top:6px; font-size:12.5px; color:var(--text-muted); display:flex; flex-wrap:wrap; gap:5px; }
+  .lead-notes{ margin:8px 0 0; font-size:13px; line-height:1.4; }
+  .lead-foot{ margin-top:9px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .lead-whatsapp{ font-size:12.5px; font-weight:600; color:var(--accent); text-decoration:none; }
+  .lead-time{ font-size:11px; color:var(--text-muted); font-family:"IBM Plex Mono",monospace; margin-left:auto; }
+  .btn-delete{ font-size:11.5px; color:var(--danger); background:none; border:none; cursor:pointer; padding:2px 0; font-weight:600; }
+
+  .empty-state{ text-align:center; color:var(--text-muted); font-size:13px; padding:18px 0; margin:0; }
+  [hidden]{ display:none!important; }
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark"><img src="data:image/png;base64,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" alt="Zeta logo"></span>
+        <div class="brand-text">
+          <strong>Zeta CloudHub — ITCN Asia Lead Capture</strong>
+          <span class="brand-sub">Sept 22–24</span>
+        </div>
+      </div>
+      <div class="topbar-stats">
+        <div class="stat"><span id="countTotal" class="mono">0</span><label>Leads</label></div>
+        <div class="stat hot"><span id="countHot" class="mono">0</span><label>Hot</label></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="card form-card">
+      <h2>New Lead</h2>
+      <form id="leadForm">
+        <div class="field">
+          <label for="fName">Name</label>
+          <input type="text" id="fName" name="name" required placeholder="Full name" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="fCompany">Company</label>
+          <input type="text" id="fCompany" name="company" placeholder="Organization" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="fEmail">Email</label>
+          <input type="email" id="fEmail" name="email" placeholder="name@company.com" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="fWhatsapp">WhatsApp Number</label>
+          <input type="tel" id="fWhatsapp" name="whatsapp" placeholder="+92 3xx xxxxxxx" autocomplete="off">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="fType">Type of Lead</label>
+            <select id="fType" name="leadType">
+              <option value="">Select…</option>
+              <option>Bank</option>
+              <option>Government / Public Sector</option>
+              <option>Enterprise</option>
+              <option>SME / Startup</option>
+              <option>Student / Career Interest</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fPriority">Priority</label>
+            <select id="fPriority" name="priority">
+              <option value="">Select…</option>
+              <option>Hot</option>
+              <option>Warm</option>
+              <option>Cold</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fInterest">What They're Looking For</label>
+          <select id="fInterest" name="interest">
+            <option value="">Select…</option>
+            <option>Private Cloud (HyperNext)</option>
+            <option>Public Cloud (Zeta CloudHub)</option>
+            <option>Hybrid Cloud</option>
+            <option>Consultancy</option>
+            <option>TCO Assessment</option>
+            <option>Technical Training</option>
+            <option>Workshop</option>
+            <option>Career / Information</option>
+            <option>Not sure yet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fNextAction">Requested Next Action</label>
+          <select id="fNextAction" name="nextAction">
+            <option value="">Select…</option>
+            <option>Schedule Discovery Call</option>
+            <option>Technical Deep-Dive</option>
+            <option>Send One-Pager</option>
+            <option>Proposal / Quote Request</option>
+            <option>Career / Internship Info</option>
+            <option>No Action Needed</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fNotes">Notes</label>
+          <textarea id="fNotes" name="notes" rows="2" placeholder="What was discussed, next step…"></textarea>
+        </div>
+        <button type="submit" class="btn-primary" id="btnAdd">Add Lead</button>
+      </form>
+    </section>
+
+    <section class="card list-card">
+      <div class="list-head">
+        <h2>Captured Leads</h2>
+        <div class="filter-chips" id="filterChips">
+          <button type="button" class="chip active" data-filter="all">All</button>
+          <button type="button" class="chip" data-filter="Hot">Hot</button>
+          <button type="button" class="chip" data-filter="Warm">Warm</button>
+          <button type="button" class="chip" data-filter="Cold">Cold</button>
+        </div>
+      </div>
+      <div id="leadList" class="lead-list"></div>
+      <p id="emptyState" class="empty-state">No leads yet. First entry above.</p>
+      <div class="export-row">
+        <button type="button" class="btn-secondary" id="btnExport">Export to Excel</button>
+        <button type="button" class="btn-ghost" id="btnClear">Clear all</button>
+      </div>
+      <p class="hint">Saved on this device only, works offline. Export anytime to an .xlsx file, then share it once you're back online.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  var STORAGE_KEY = "itcn2026_leads_v1";
+  var leads = [];
+  var activeFilter = "all";
+
+  function loadLeads(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      leads = raw ? JSON.parse(raw) : [];
+    }catch(e){ leads = []; }
+  }
+  function saveLeads(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(leads)); }catch(e){}
+  }
+
+  function fmtTime(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleDateString(undefined,{month:"short",day:"numeric"}) + ", " +
+             d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+    }catch(e){ return ""; }
+  }
+
+  function waHref(num){
+    var digits = (num||"").replace(/[^0-9]/g,"");
+    if(!digits) return "";
+    return "https://wa.me/" + digits;
+  }
+
+  function escapeHtml(s){
+    return (s||"").replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function render(){
+    var list = document.getElementById("leadList");
+    var empty = document.getElementById("emptyState");
+    var visible = leads.filter(function(l){
+      return activeFilter === "all" || l.priority === activeFilter;
+    });
+    list.innerHTML = visible.slice().reverse().map(function(l){
+      var pClass = l.priority || "none";
+      var wa = waHref(l.whatsapp);
+      var metaBits = [l.leadType, l.interest, l.nextAction].filter(Boolean);
+      return '' +
+        '<div class="lead-card" data-id="'+l.id+'">' +
+          '<div class="lead-card-top">' +
+            '<div class="lead-main">' +
+              '<span class="lead-name">'+escapeHtml(l.name)+'</span>' +
+              (l.company ? '<span class="lead-company">'+escapeHtml(l.company)+'</span>' : '') +
+            '</div>' +
+            '<span class="chip chip-priority '+pClass+'">'+(l.priority || "—")+'</span>' +
+          '</div>' +
+          (metaBits.length ? '<div class="lead-meta">'+metaBits.map(escapeHtml).join(' · ')+'</div>' : '') +
+          (l.notes ? '<p class="lead-notes">'+escapeHtml(l.notes)+'</p>' : '') +
+          '<div class="lead-foot">' +
+            (wa ? '<a class="lead-whatsapp" href="'+wa+'" target="_blank" rel="noopener">WhatsApp</a>' : '') +
+            (l.email ? '<a class="lead-whatsapp" href="mailto:'+encodeURIComponent(l.email).replace(/%40/g,"@")+'">Email</a>' : '') +
+            '<span class="lead-time">'+fmtTime(l.ts)+'</span>' +
+            '<button type="button" class="btn-delete" data-id="'+l.id+'">Remove</button>' +
+          '</div>' +
+        '</div>';
+    }).join("");
+
+    empty.hidden = leads.length !== 0;
+    document.getElementById("countTotal").textContent = leads.length;
+    document.getElementById("countHot").textContent = leads.filter(function(l){return l.priority==="Hot";}).length;
+
+    Array.prototype.forEach.call(document.querySelectorAll(".btn-delete"), function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-id");
+        leads = leads.filter(function(l){ return l.id !== id; });
+        saveLeads(); render();
+      });
+    });
+  }
+
+  document.getElementById("leadForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var name = document.getElementById("fName").value.trim();
+    if(!name) return;
+    var lead = {
+      id: "l" + Date.now() + Math.random().toString(36).slice(2,7),
+      name: name,
+      company: document.getElementById("fCompany").value.trim(),
+      email: document.getElementById("fEmail").value.trim(),
+      whatsapp: document.getElementById("fWhatsapp").value.trim(),
+      leadType: document.getElementById("fType").value,
+      priority: document.getElementById("fPriority").value,
+      interest: document.getElementById("fInterest").value,
+      nextAction: document.getElementById("fNextAction").value,
+      notes: document.getElementById("fNotes").value.trim(),
+      ts: new Date().toISOString()
+    };
+    leads.push(lead);
+    saveLeads();
+    document.getElementById("leadForm").reset();
+    document.getElementById("fName").focus();
+    render();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll("#filterChips .chip"), function(chip){
+    chip.addEventListener("click", function(){
+      activeFilter = chip.getAttribute("data-filter");
+      Array.prototype.forEach.call(document.querySelectorAll("#filterChips .chip"), function(c){
+        c.classList.toggle("active", c === chip);
+      });
+      render();
+    });
+  });
+
+  document.getElementById("btnClear").addEventListener("click", function(){
+    if(leads.length === 0) return;
+    if(!confirm("Remove all " + leads.length + " captured leads from this device? This can't be undone.")) return;
+    leads = [];
+    saveLeads(); render();
+  });
+
+  document.getElementById("btnExport").addEventListener("click", function(){
+    if(leads.length === 0){ alert("No leads captured yet."); return; }
+    exportExcel();
+  });
+
+  function csvCell(v){
+    var s = (v === undefined || v === null) ? "" : String(v);
+    if(/[",\n]/.test(s)) s = '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+
+  function buildCsv(){
+    var headers = ["Name","Company","Email","WhatsApp","Type of Lead","Priority","Looking For","Requested Next Action","Notes","Captured At"];
+    var lines = [headers.map(csvCell).join(",")];
+    leads.forEach(function(l){
+      lines.push([l.name,l.company,l.email,l.whatsapp,l.leadType,l.priority,l.interest,l.nextAction,l.notes,fmtTime(l.ts)].map(csvCell).join(","));
+    });
+    return "﻿" + lines.join("\r\n");
+  }
+
+  async function exportExcel(){
+    var btn = document.getElementById("btnExport");
+    var originalText = btn.textContent;
+    btn.textContent = "Preparing…";
+    btn.disabled = true;
+    try{
+      var blob = new Blob([buildCsv()], {type:"text/csv;charset=utf-8"});
+
+      var stamp = new Date().toISOString().slice(0,10);
+      var filename = "itcn-leads-" + stamp + ".csv";
+      var downloads = window.claude ? await window.claude.use("downloads") : null;
+      if(downloads){
+        await downloads.save({ filename: filename, data: blob });
+      }else{
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = filename; a.rel = "noopener";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+      }
+      btn.textContent = "Saved";
+      setTimeout(function(){ btn.textContent = originalText; btn.disabled = false; }, 1600);
+    }catch(err){
+      btn.textContent = (err && err.code === "declined") ? originalText : "Export failed";
+      btn.disabled = false;
+      if(!(err && err.code === "declined")){
+        setTimeout(function(){ btn.textContent = originalText; }, 2200);
+      }
+    }
+  }
+
+  loadLeads();
+  render();
+})();
+</script>
