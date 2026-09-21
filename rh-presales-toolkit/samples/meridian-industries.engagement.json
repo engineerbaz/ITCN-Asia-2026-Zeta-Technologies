@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "client_name": "Meridian Industries",
+    "industry": "Manufacturing",
+    "profile": "generic",
+    "engagement_id": "MER-202607-OCPV",
+    "engineer": "Sample Engineer",
+    "workshop_date": "2026-07-20",
+    "positioning": "redhat_default",
+    "currency": { "base": "USD", "pkr_rate": 279.4, "pkr_rate_updated": "2026-07-20" },
+    "created": "2026-07-20T09:00:00.000Z",
+    "updated": "2026-07-20T11:30:00.000Z"
+  },
+  "qualification": {
+    "bant": { "budget": 4, "authority": 4, "need": 5, "timeline": 4, "notes": "Budget line exists for VMware renewal; CIO owns the decision; renewal date is the forcing event." },
+    "meddpicc": {
+      "metrics": 6, "economic_buyer": 7, "decision_criteria": 6, "decision_process": 5,
+      "paper_process": 4, "identified_pain": 8, "champion": 7, "competition": 5,
+      "notes": "Pain is quantified (renewal quote in hand). Infrastructure manager is an active champion. Nutanix has presented once; no formal RFP yet."
+    },
+    "scores": { "bant": 17, "meddpicc": 48, "total": 65, "band": "Pursue" }
+  },
+  "business": {
+    "drivers": ["Cost reduction", "VMware exit / renewal pressure", "Application modernization", "Vendor consolidation"],
+    "outcomes": "Exit the VMware renewal cycle before December, cut virtualization run cost, and create a path to containerize the in-house MES and logistics apps without buying a second platform.",
+    "constraints": "Change freeze mid-November to mid-January (production peak). Capex approval board meets quarterly, next sitting mid-September.",
+    "budget_range": "Directional 1.2M USD over 3 years for platform and migration",
+    "decision_timeline": "Decision by end of September 2026, PO before the November freeze",
+    "success_criteria": "Renewal avoided, 90% of VMs migrated within 6 months, MES pilot containerized within 12 months"
+  },
+  "stakeholders": [
+    { "name": "Farah Malik", "role": "CIO", "influence": "High", "disposition": "Supporter", "notes": "Economic buyer. Cares about renewal cost and risk of a rushed migration." },
+    { "name": "Adeel Khan", "role": "Infrastructure Manager", "influence": "High", "disposition": "Champion", "notes": "Runs the VMware estate. Burned by the uplift quote. Wants a platform his team can grow into." },
+    { "name": "Sana Riaz", "role": "Head of Applications", "influence": "Medium", "disposition": "Neutral", "notes": "Interested in the MES modernization angle, worried about migration disrupting the app teams." },
+    { "name": "Imran Bukhari", "role": "CFO", "influence": "High", "disposition": "Skeptic", "notes": "Will challenge every TCO number. Wants the status quo cost modeled honestly, including the do-nothing risk." }
+  ],
+  "technical": {
+    "estate": {
+      "virtualization_platform": "VMware vSphere",
+      "physical_hosts": 24,
+      "total_vms": 420,
+      "storage_platform": "vSAN (all-flash) plus one legacy FC SAN for the ERP cluster",
+      "network": "Traditional VLANs, no NSX",
+      "backup": "Veeam B&R 12",
+      "monitoring": "Zabbix plus vROps (Aria) for capacity",
+      "os_mix": "65% RHEL/Linux, 35% Windows Server",
+      "databases": "Oracle 19c (2-node RAC), SQL Server 2019, PostgreSQL"
+    },
+    "workloads": [
+      { "name": "ERP (Oracle EBS)", "type": "VM", "count": 28, "criticality": "Mission critical", "modernization_candidate": "No", "notes": "Stays as VMs. Oracle licensing sensitivity, keep on dedicated hosts." },
+      { "name": "MES (in-house Java)", "type": "VM", "count": 46, "criticality": "Business critical", "modernization_candidate": "Yes", "notes": "Primary containerization candidate, dev team already using Docker locally." },
+      { "name": "Logistics & WMS", "type": "VM", "count": 38, "criticality": "Business critical", "modernization_candidate": "Maybe", "notes": "Vendor roadmap includes a container distribution in 2027." },
+      { "name": "File/print, AD, utility", "type": "VM", "count": 120, "criticality": "Standard", "modernization_candidate": "No", "notes": "Lift and shift as VMs." },
+      { "name": "Dev/test", "type": "VM", "count": 188, "criticality": "Dev/test", "modernization_candidate": "Maybe", "notes": "First migration wave candidate, low blast radius." }
+    ],
+    "container_ambition": "Committed — some apps",
+    "container_apps_count": 12,
+    "pain_points": "VMware renewal quote up 65% under the new subscription model. vSphere 7 estate needs a major upgrade either way (ESXi 7 past end of general support since October 2025). Team of 5 admins stretched. App teams complain provisioning takes two weeks.",
+    "compliance": ["ISO 27001"],
+    "data_residency": "None",
+    "growth": { "vm_growth_pct": 10, "horizon_years": 3, "notes": "Organic growth plus a second packaging line coming online in 2027." },
+    "dr": { "rpo": "1 hour", "rto": "8 hours", "dr_site": "Warm", "backup_tool": "Veeam replication to DR site" }
+  },
+  "vmware": {
+    "present": "yes",
+    "hosts": 24,
+    "sockets_per_host": 2,
+    "cores_per_socket": 16,
+    "vms_total": 420,
+    "vms_powered_on": 385,
+    "avg_vcpu": 4,
+    "avg_vram_gb": 16,
+    "vcenter_version": "7.0 U3",
+    "esxi_version": "7.0.3",
+    "products": ["vSphere", "vSAN", "Aria / vRealize"],
+    "ela_status": "ELA expiring within 12 months",
+    "renewal_date": "2026-12-31",
+    "renewal_quote_usd": 1180000,
+    "uplift_pct": 65,
+    "pain": "Quoted VCF subscription at 1.18M USD for 3 years, 65% above prior ELA. Only need vSphere+vSAN, forced to buy the full VCF bundle. Account team unresponsive since Broadcom transition.",
+    "total_cores": 768
+  },
+  "assumptions": [
+    { "text": "Renewal quote of 1,180,000 USD is for a 3-year VCF subscription covering the full 48-socket estate", "source": "Adeel Khan, quote email shared in workshop", "tag": "input" },
+    { "text": "Powered-on VM count (385) used for sizing; powered-off VMs assumed archivable", "source": "RVTools export dated 2026-07-15", "tag": "input" },
+    { "text": "10% annual workload growth", "source": "CIO planning figure, not board-approved", "tag": "directional" }
+  ],
+  "gaps": [],
+  "recommendation": null
+}

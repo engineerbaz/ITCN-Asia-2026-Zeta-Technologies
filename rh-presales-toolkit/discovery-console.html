@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discovery Console | Pre-Sales Toolkit</title>
+<!-- Word export (only permitted external dependency; vendor locally for offline use: save this file next to the console and change src) -->
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<style>
+:root{--rh:#ee0000;--ink:#151515;--mut:#6a6e73;--bg:#f2f2f2;--card:#fff;--ok:#3e8635;--warn:#f0ab00;--bad:#c9190b;--line:#d2d2d2}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+header{background:var(--ink);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:16px;font-weight:600}
+header .brandbar{width:6px;height:28px;background:var(--rh);border-radius:2px}
+header .sp{flex:1}
+.badge{padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+.badge.rh{background:var(--rh);color:#fff}.badge.neu{background:#4394e5;color:#fff}
+#savestat{font-size:12px;color:#b8bbbe}
+#progwrap{background:#fff;border-bottom:1px solid var(--line);padding:8px 20px;display:flex;align-items:center;gap:12px}
+#progbar{flex:1;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden}
+#progfill{height:100%;width:0;background:var(--ok);transition:width .3s}
+#progpct{font-size:12px;font-weight:600;min-width:110px;text-align:right}
+.layout{display:flex;min-height:calc(100vh - 110px)}
+nav{width:240px;background:#fff;border-right:1px solid var(--line);padding:12px 0;flex-shrink:0}
+nav button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:0;background:none;padding:11px 16px;font-size:13px;cursor:pointer;border-left:3px solid transparent;color:var(--ink)}
+nav button:hover{background:#f5f5f5}
+nav button.active{border-left-color:var(--rh);background:#fafafa;font-weight:600}
+nav .pct{font-size:11px;color:var(--mut)}
+nav .pct.done{color:var(--ok);font-weight:700}
+main{flex:1;padding:24px;max-width:980px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px;margin-bottom:16px}
+.card h2{font-size:16px;margin-bottom:4px}
+.card .sub{color:var(--mut);font-size:12px;margin-bottom:16px}
+.f{margin-bottom:14px}
+.f label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
+.f label .req{color:var(--rh)}
+.f .help{font-size:11px;color:var(--mut);margin-top:3px}
+.f input[type=text],.f input[type=number],.f input[type=date],.f select,.f textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:4px;font-size:13px;font-family:inherit;background:#fff}
+.f textarea{min-height:64px;resize:vertical}
+.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid #0066cc33;border-color:#0066cc}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 20px}
+.slider{display:flex;align-items:center;gap:12px}
+.slider input[type=range]{flex:1;accent-color:var(--rh)}
+.slider .val{min-width:26px;text-align:center;font-weight:700;font-size:14px;background:#f0f0f0;border-radius:4px;padding:3px 6px}
+.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.checks label{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:400;cursor:pointer;padding:4px 6px;border-radius:4px}
+.checks label:hover{background:#f5f5f5}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:8px}
+table.tbl th{text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:2px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--mut)}
+table.tbl td{padding:4px 6px;border-bottom:1px solid #eee;vertical-align:top}
+table.tbl input,table.tbl select{width:100%;padding:5px 7px;border:1px solid var(--line);border-radius:4px;font-size:12.5px}
+.btn{display:inline-block;border:1px solid var(--line);background:#fff;border-radius:4px;padding:7px 14px;font-size:13px;cursor:pointer;font-weight:600}
+.btn:hover{background:#f5f5f5}
+.btn.pri{background:var(--rh);border-color:var(--rh);color:#fff}
+.btn.pri:hover{background:#c00}
+.btn.sm{padding:3px 9px;font-size:12px;font-weight:400}
+.scorebox{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 4px}
+.scorecell{background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:10px 18px;text-align:center;min-width:110px}
+.scorecell .n{font-size:24px;font-weight:800}
+.scorecell .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.band{font-size:13px;font-weight:800;padding:4px 14px;border-radius:14px;color:#fff;display:inline-block}
+.band.Commit{background:var(--ok)}.band.Pursue{background:#0066cc}.band.Develop{background:var(--warn);color:var(--ink)}.band.Nurture{background:var(--mut)}
+.gap{display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border-left:3px solid var(--warn);background:#fdf7e7;border-radius:0 4px 4px 0;margin-bottom:6px;font-size:13px}
+.gap b{font-weight:700}
+.gap.none{border-left-color:var(--ok);background:#f3faf2}
+.computed{font-size:13px;background:#f0f7ff;border:1px solid #bee1f4;border-radius:4px;padding:8px 12px;margin-bottom:14px}
+.footer-actions{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.footer-actions .note{font-size:11px;color:var(--mut);margin-left:auto}
+.hidden{display:none!important}
+#report{display:none}
+@media print{
+  body>header,#progwrap,nav,.footer-actions,main{display:none!important}
+  #report{display:block;font-size:12px;color:#000}
+  #report h1{font-size:20px;border-bottom:3px solid #ee0000;padding-bottom:6px;margin-bottom:4px}
+  #report h2{font-size:14px;margin:16px 0 6px;color:#151515;border-bottom:1px solid #ccc;padding-bottom:3px}
+  #report table{width:100%;border-collapse:collapse;margin:6px 0}
+  #report th,#report td{border:1px solid #bbb;padding:4px 7px;text-align:left;font-size:11px}
+  #report th{background:#f0f0f0}
+  #report .meta{color:#555;font-size:11px;margin-bottom:10px}
+  #report .tag{font-size:10px;border:1px solid #999;border-radius:3px;padding:0 4px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brandbar"></div>
+  <h1>Discovery Console</h1>
+  <span id="clientchip" style="font-size:13px;color:#b8bbbe"></span>
+  <span class="sp"></span>
+  <label style="font-size:12px;display:flex;align-items:center;gap:8px;cursor:pointer">
+    Positioning
+    <select id="postoggle" style="padding:4px;border-radius:4px;border:0;font-size:12px">
+      <option value="redhat_default">Red Hat default lens</option>
+      <option value="neutral">Neutral</option>
+    </select>
+  </label>
+  <span id="posbadge" class="badge rh">RED HAT LENS</span>
+  <span id="savestat">—</span>
+</header>
+<div id="progwrap"><div id="progbar"><div id="progfill"></div></div><span id="progpct">0% complete</span></div>
+<div class="layout">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+<div class="footer-actions">
+  <button class="btn pri" onclick="exportJSON()">Export JSON</button>
+  <button class="btn" onclick="document.getElementById('importfile').click()">Import JSON</button>
+  <input type="file" id="importfile" accept=".json" class="hidden" onchange="importJSON(event)">
+  <button class="btn" onclick="exportWord()">Export Word (.docx)</button>
+  <button class="btn" onclick="printReport()">Print / PDF</button>
+  <button class="btn" onclick="resetAll()">Reset</button>
+  <span class="note">Autosaves locally in this browser. Export JSON is the portable record and feeds the Recommendation Engine.</span>
+</div>
+<div id="report"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Discovery Console — Phase 1 of the Pre-Sales Toolkit
+   Single-file, no server. Data contract: engagement.json v1.0
+   ============================================================ */
+
+const SCHEMA_VERSION = "1.0";
+const LS_KEY = "presales.engagement.v1";
+const FX_DEFAULT = 279.40;                 // USD/PKR interbank, editable
+const FX_DEFAULT_DATE = "2026-07-20";      // last updated
+
+function emptyState(){
+  return {
+    schema_version: SCHEMA_VERSION,
+    meta: {
+      client_name:"", industry:"", profile:"generic", engagement_id:"",
+      engineer:"", workshop_date:"", positioning:"redhat_default",
+      currency:{ base:"USD", pkr_rate:FX_DEFAULT, pkr_rate_updated:FX_DEFAULT_DATE },
+      created:new Date().toISOString(), updated:""
+    },
+    qualification:{
+      bant:{ budget:0, authority:0, need:0, timeline:0, notes:"" },
+      meddpicc:{ metrics:0, economic_buyer:0, decision_criteria:0, decision_process:0,
+                 paper_process:0, identified_pain:0, champion:0, competition:0, notes:"" }
+    },
+    business:{ drivers:[], outcomes:"", constraints:"", budget_range:"", decision_timeline:"", success_criteria:"" },
+    stakeholders:[],
+    technical:{
+      estate:{ virtualization_platform:"", physical_hosts:null, total_vms:null, storage_platform:"",
+               network:"", backup:"", monitoring:"", os_mix:"", databases:"" },
+      workloads:[],
+      container_ambition:"", container_apps_count:null,
+      pain_points:"", compliance:[], data_residency:"",
+      growth:{ vm_growth_pct:null, horizon_years:3, notes:"" },
+      dr:{ rpo:"", rto:"", dr_site:"", backup_tool:"" }
+    },
+    vmware:{ present:"", hosts:null, sockets_per_host:null, cores_per_socket:null,
+             vms_total:null, vms_powered_on:null, avg_vcpu:null, avg_vram_gb:null,
+             vcenter_version:"", esxi_version:"", products:[], ela_status:"",
+             renewal_date:"", renewal_quote_usd:null, uplift_pct:null, pain:"" },
+    assumptions:[],
+    gaps:[],
+    recommendation:null
+  };
+}
+let state = emptyState();
+
+/* ---------- path helpers ---------- */
+function get(p){ return p.split(".").reduce((o,k)=> (o==null? undefined : o[k]), state); }
+function set(p,v){ const ks=p.split("."); let o=state; for(let i=0;i<ks.length-1;i++) o=o[ks[i]]; o[ks[ks.length-1]]=v; onChange(); }
+
+/* ---------- field & section definitions ---------- */
+const SEL_INFLUENCE=["High","Medium","Low"];
+const SEL_DISPO=["Champion","Supporter","Neutral","Skeptic","Blocker"];
+const DRIVERS=["Cost reduction","VMware exit / renewal pressure","Data sovereignty / residency","Application modernization","DR / resilience improvement","Data center exit","Agility / faster delivery","Compliance mandate","Performance","Vendor consolidation"];
+const COMPLIANCE=["ISO 27001","PCI-DSS","Central bank / SBP guidelines","GDPR","SOC 2","HIPAA","Data residency mandate","None identified"];
+const VMW_PRODUCTS=["vSphere","vSAN","NSX","SRM","Aria / vRealize","Horizon","VMware Cloud Foundation (VCF)"];
+
+const SECTIONS=[
+{ id:"meta", title:"1 · Engagement", sub:"Who, when, and under which lens.", fields:[
+  {p:"meta.client_name",l:"Client name",t:"text",req:1},
+  {p:"meta.industry",l:"Industry",t:"select",req:1,opts:["","General enterprise","Banking / FinTech","Telco","Government / public sector","Manufacturing","Healthcare","Energy / utilities","Retail","Other"]},
+  {p:"meta.profile",l:"Walkthrough profile",t:"select",opts:["generic","banking"],help:"Controls which sample framing the toolkit docs reference. Does not change scoring."},
+  {p:"meta.engagement_id",l:"Engagement ID",t:"text",ph:"e.g. MER-202607-OCPV"},
+  {p:"meta.engineer",l:"Pre-sales engineer",t:"text",req:1},
+  {p:"meta.workshop_date",l:"Workshop date",t:"date"},
+  {p:"meta.currency.pkr_rate",l:"USD → PKR rate (editable)",t:"number",help:"Interbank default "+FX_DEFAULT+" as of "+FX_DEFAULT_DATE+". Indicative only, subject to prevailing rate on day of quotation."},
+]},
+{ id:"qual", title:"2 · Qualification", sub:"BANT quick screen (0–5 each, max 20) gates entry. MEDDPICC (0–10 each, max 80) scores the qualified pipeline.", custom:"qual", fields:[
+  {p:"qualification.bant.budget",l:"Budget — funding identified or plausible",t:"slider",max:5,req:1},
+  {p:"qualification.bant.authority",l:"Authority — access to decision maker",t:"slider",max:5,req:1},
+  {p:"qualification.bant.need",l:"Need — articulated business or technical pain",t:"slider",max:5,req:1},
+  {p:"qualification.bant.timeline",l:"Timeline — event forcing a decision",t:"slider",max:5,req:1},
+  {p:"qualification.bant.notes",l:"BANT notes",t:"textarea"},
+  {p:"qualification.meddpicc.metrics",l:"Metrics — quantified value the client will measure",t:"slider",max:10},
+  {p:"qualification.meddpicc.economic_buyer",l:"Economic buyer — identified and engaged",t:"slider",max:10},
+  {p:"qualification.meddpicc.decision_criteria",l:"Decision criteria — known, influenced in our favor",t:"slider",max:10},
+  {p:"qualification.meddpicc.decision_process",l:"Decision process — mapped with dates",t:"slider",max:10},
+  {p:"qualification.meddpicc.paper_process",l:"Paper process — procurement / legal path understood",t:"slider",max:10},
+  {p:"qualification.meddpicc.identified_pain",l:"Identified pain — costed and owned by a stakeholder",t:"slider",max:10},
+  {p:"qualification.meddpicc.champion",l:"Champion — sells internally when we are not in the room",t:"slider",max:10},
+  {p:"qualification.meddpicc.competition",l:"Competition — landscape known, traps set",t:"slider",max:10},
+  {p:"qualification.meddpicc.notes",l:"MEDDPICC notes",t:"textarea"},
+]},
+{ id:"exec", title:"3 · Executive discovery", sub:"Business drivers, outcomes, and the people who decide.", fields:[
+  {p:"business.drivers",l:"Business drivers (select all that apply)",t:"checks",opts:DRIVERS,req:1},
+  {p:"business.outcomes",l:"Desired outcomes (in the client's words)",t:"textarea",req:1},
+  {p:"business.constraints",l:"Constraints (budget cycle, freeze windows, policies)",t:"textarea"},
+  {p:"business.budget_range",l:"Budget range (USD, if disclosed)",t:"text",ph:"e.g. 500k–1M USD over 3 years"},
+  {p:"business.decision_timeline",l:"Decision timeline",t:"text",ph:"e.g. PO before fiscal year end"},
+  {p:"business.success_criteria",l:"Success criteria / metrics",t:"textarea"},
+  {p:"stakeholders",l:"Stakeholder map",t:"table",req:1,cols:[
+    {k:"name",l:"Name",t:"text"},{k:"role",l:"Role / title",t:"text"},
+    {k:"influence",l:"Influence",t:"select",opts:SEL_INFLUENCE},
+    {k:"disposition",l:"Disposition",t:"select",opts:SEL_DISPO},
+    {k:"notes",l:"Notes",t:"text"}]},
+]},
+{ id:"tech", title:"4 · Technical discovery", sub:"Current estate, workloads, pain, compliance, growth, DR.", fields:[
+  {p:"technical.estate.virtualization_platform",l:"Primary virtualization platform",t:"select",req:1,opts:["","VMware vSphere","Nutanix AHV","Microsoft Hyper-V","KVM / oVirt / Proxmox","OpenStack","Mostly physical","Public cloud only","Mixed"]},
+  {p:"technical.estate.physical_hosts",l:"Physical hosts (all platforms)",t:"number"},
+  {p:"technical.estate.total_vms",l:"Total VMs (all platforms)",t:"number",req:1},
+  {p:"technical.estate.storage_platform",l:"Storage platform(s)",t:"text",ph:"e.g. SAN (brand), vSAN, NAS"},
+  {p:"technical.estate.network",l:"Network / SDN",t:"text",ph:"e.g. NSX, ACI, traditional VLANs"},
+  {p:"technical.estate.backup",l:"Backup platform",t:"text"},
+  {p:"technical.estate.monitoring",l:"Monitoring / observability",t:"text"},
+  {p:"technical.estate.os_mix",l:"Guest OS mix",t:"text",ph:"e.g. 70% RHEL/Linux, 30% Windows"},
+  {p:"technical.estate.databases",l:"Key databases / middleware",t:"text",ph:"e.g. Oracle RAC, SQL Server, WebLogic"},
+  {p:"technical.workloads",l:"Workload inventory (top workloads or groups)",t:"table",req:1,cols:[
+    {k:"name",l:"Workload / app",t:"text"},
+    {k:"type",l:"Type",t:"select",opts:["VM","Container","Bare metal","SaaS"]},
+    {k:"count",l:"Count",t:"number"},
+    {k:"criticality",l:"Criticality",t:"select",opts:["Mission critical","Business critical","Standard","Dev/test"]},
+    {k:"modernization_candidate",l:"Modernize?",t:"select",opts:["No","Maybe","Yes"]},
+    {k:"notes",l:"Notes",t:"text"}]},
+  {p:"technical.container_ambition",l:"Container / modernization ambition",t:"select",req:1,opts:["","None","Exploring","Committed — some apps","Committed — platform strategy"]},
+  {p:"technical.container_apps_count",l:"Apps identified for containerization",t:"number"},
+  {p:"technical.pain_points",l:"Pain points (verbatim where possible)",t:"textarea",req:1},
+  {p:"technical.compliance",l:"Compliance and regulatory scope",t:"checks",opts:COMPLIANCE,req:1},
+  {p:"technical.data_residency",l:"Data residency requirement",t:"select",opts:["","None","Preference for in-country","Mandated in-country"]},
+  {p:"technical.growth.vm_growth_pct",l:"Expected workload growth % per year",t:"number",req:1},
+  {p:"technical.growth.horizon_years",l:"Capacity planning horizon (years)",t:"number"},
+  {p:"technical.growth.notes",l:"Growth notes",t:"textarea"},
+  {p:"technical.dr.rpo",l:"RPO target",t:"text",req:1,ph:"e.g. 15 minutes"},
+  {p:"technical.dr.rto",l:"RTO target",t:"text",req:1,ph:"e.g. 4 hours"},
+  {p:"technical.dr.dr_site",l:"DR site status",t:"select",opts:["","None","Cold","Warm","Hot / active-active","Cloud DR"]},
+  {p:"technical.dr.backup_tool",l:"DR / replication tooling",t:"text"},
+]},
+{ id:"vmw", title:"5 · VMware estate", sub:"Recurring deal driver. Capture the licensing position precisely, it anchors the TCO model.", custom:"vmw", fields:[
+  {p:"vmware.present",l:"VMware in the estate?",t:"select",req:1,opts:["","yes","no"]},
+  {p:"vmware.hosts",l:"ESXi hosts",t:"number",req:1,showIf:"vmwyes"},
+  {p:"vmware.sockets_per_host",l:"Sockets per host",t:"number",req:1,showIf:"vmwyes"},
+  {p:"vmware.cores_per_socket",l:"Cores per socket",t:"number",req:1,showIf:"vmwyes"},
+  {p:"vmware.vms_total",l:"Total VMs on VMware",t:"number",req:1,showIf:"vmwyes"},
+  {p:"vmware.vms_powered_on",l:"Powered-on VMs",t:"number",showIf:"vmwyes"},
+  {p:"vmware.avg_vcpu",l:"Average vCPU per VM",t:"number",showIf:"vmwyes"},
+  {p:"vmware.avg_vram_gb",l:"Average vRAM per VM (GB)",t:"number",showIf:"vmwyes"},
+  {p:"vmware.vcenter_version",l:"vCenter version",t:"text",req:1,showIf:"vmwyes",ph:"e.g. 7.0 U3"},
+  {p:"vmware.esxi_version",l:"ESXi version(s)",t:"text",showIf:"vmwyes"},
+  {p:"vmware.products",l:"VMware products in use",t:"checks",opts:VMW_PRODUCTS,showIf:"vmwyes"},
+  {p:"vmware.ela_status",l:"Licensing / ELA status",t:"select",req:1,showIf:"vmwyes",opts:["","Active ELA","ELA expiring within 12 months","Expired / holdover","Perpetual + active SnS","Perpetual, SnS lapsed","VCF subscription","Unknown"]},
+  {p:"vmware.renewal_date",l:"Next renewal date",t:"date",req:1,showIf:"vmwyes"},
+  {p:"vmware.renewal_quote_usd",l:"Last renewal quote (USD, if known)",t:"number",showIf:"vmwyes",help:"Tag source in Assumptions. This anchors the status quo TCO scenario."},
+  {p:"vmware.uplift_pct",l:"Quoted / expected renewal uplift %",t:"number",showIf:"vmwyes"},
+  {p:"vmware.pain",l:"VMware-specific pain (pricing, roadmap, support)",t:"textarea",showIf:"vmwyes"},
+]},
+{ id:"review", title:"6 · Review & export", sub:"Gap flags, assumptions log, and the handoff to the Recommendation Engine.", custom:"review", fields:[
+  {p:"assumptions",l:"Assumptions log — every number a CFO could challenge gets a row",t:"table",cols:[
+    {k:"text",l:"Assumption",t:"text"},
+    {k:"source",l:"Source (who said it / doc)",t:"text"},
+    {k:"tag",l:"Tag",t:"select",opts:["input","cited","directional"]}]},
+]},
+];
+
+/* ---------- derived values ---------- */
+function bantScore(){ const b=state.qualification.bant; return (+b.budget||0)+(+b.authority||0)+(+b.need||0)+(+b.timeline||0); }
+function meddScore(){ const m=state.qualification.meddpicc; return ["metrics","economic_buyer","decision_criteria","decision_process","paper_process","identified_pain","champion","competition"].reduce((s,k)=>s+(+m[k]||0),0); }
+function totalScore(){ return bantScore()+meddScore(); }
+function band(){ const t=totalScore(); return t>=80?"Commit":t>=60?"Pursue":t>=40?"Develop":"Nurture"; }
+function vmwCores(){ const v=state.vmware; const c=(+v.hosts||0)*(+v.sockets_per_host||0)*(+v.cores_per_socket||0); return c||0; }
+
+function fieldVisible(f){
+  if(!f.showIf) return true;
+  if(f.showIf==="vmwyes") return state.vmware.present==="yes";
+  return true;
+}
+function fieldFilled(f){
+  const v=get(f.p);
+  if(f.t==="checks"||f.t==="table") return Array.isArray(v)&&v.length>0;
+  if(f.t==="slider") return true; // sliders always have a value; BANT required = engineer must consciously set, treated as filled
+  if(f.t==="number") return v!==null&&v!==""&&v!==undefined&&!isNaN(v);
+  return v!==""&&v!==null&&v!==undefined;
+}
+function sectionProgress(sec){
+  const req=sec.fields.filter(f=>f.req&&fieldVisible(f));
+  if(!req.length) return 100;
+  return Math.round(100*req.filter(fieldFilled).length/req.length);
+}
+function overallProgress(){
+  let done=0,tot=0;
+  SECTIONS.forEach(s=>s.fields.forEach(f=>{ if(f.req&&fieldVisible(f)){tot++; if(fieldFilled(f))done++;} }));
+  return tot?Math.round(100*done/tot):0;
+}
+function computeGaps(){
+  const gaps=[];
+  SECTIONS.forEach(s=>s.fields.forEach(f=>{
+    if(f.req&&fieldVisible(f)&&!fieldFilled(f)) gaps.push({section:s.title,field:f.l});
+  }));
+  // qualitative gaps
+  if(state.stakeholders.length&&!state.stakeholders.some(x=>x.disposition==="Champion"))
+    gaps.push({section:"3 · Executive discovery",field:"No champion identified in the stakeholder map"});
+  if(state.qualification.meddpicc.economic_buyer<4)
+    gaps.push({section:"2 · Qualification",field:"Economic buyer weakly identified (MEDDPICC ≤ 3)"});
+  if(state.vmware.present==="yes"&&(state.vmware.renewal_quote_usd==null||state.vmware.renewal_quote_usd===""))
+    gaps.push({section:"5 · VMware estate",field:"No renewal quote captured — status quo TCO will rely on a directional estimate"});
+  return gaps;
+}
+
+/* ---------- rendering ---------- */
+let activeSection="meta";
+function renderNav(){
+  const n=document.getElementById("nav"); n.innerHTML="";
+  SECTIONS.forEach(s=>{
+    const p=sectionProgress(s);
+    const b=document.createElement("button");
+    b.className=s.id===activeSection?"active":"";
+    b.innerHTML=`<span>${s.title}</span><span class="pct ${p===100?"done":""}">${p}%</span>`;
+    b.onclick=()=>{activeSection=s.id;renderAll();};
+    n.appendChild(b);
+  });
+}
+function fieldHTML(f,i){
+  const v=get(f.p);
+  const req=f.req?' <span class="req">*</span>':"";
+  const help=f.help?`<div class="help">${f.help}</div>`:"";
+  const hid=fieldVisible(f)?"":" hidden";
+  const id="fld"+i;
+  let inner="";
+  if(f.t==="text") inner=`<input type="text" id="${id}" value="${esc(v??"")}" placeholder="${f.ph||""}" oninput="set('${f.p}',this.value)">`;
+  else if(f.t==="number") inner=`<input type="number" id="${id}" value="${v??""}" step="any" oninput="set('${f.p}',this.value===''?null:+this.value)">`;
+  else if(f.t==="date") inner=`<input type="date" id="${id}" value="${esc(v??"")}" oninput="set('${f.p}',this.value)">`;
+  else if(f.t==="textarea") inner=`<textarea id="${id}" oninput="set('${f.p}',this.value)">${esc(v??"")}</textarea>`;
+  else if(f.t==="select") inner=`<select id="${id}" onchange="set('${f.p}',this.value)">${f.opts.map(o=>`<option value="${esc(o)}" ${o===v?"selected":""}>${o===""?"— select —":esc(o)}</option>`).join("")}</select>`;
+  else if(f.t==="slider") inner=`<div class="slider"><input type="range" min="0" max="${f.max}" value="${+v||0}" oninput="set('${f.p}',+this.value);this.nextElementSibling.textContent=this.value"><span class="val">${+v||0}</span></div>`;
+  else if(f.t==="checks") inner=`<div class="checks">${f.opts.map(o=>`<label><input type="checkbox" ${Array.isArray(v)&&v.includes(o)?"checked":""} onchange="toggleCheck('${f.p}','${esc(o)}',this.checked)">${esc(o)}</label>`).join("")}</div>`;
+  else if(f.t==="table") inner=tableHTML(f);
+  return `<div class="f${hid}" data-path="${f.p}"><label>${f.l}${req}</label>${inner}${help}</div>`;
+}
+function tableHTML(f){
+  const rows=get(f.p)||[];
+  const head=f.cols.map(c=>`<th>${c.l}</th>`).join("")+"<th></th>";
+  const body=rows.map((r,ri)=>"<tr>"+f.cols.map(c=>{
+    const val=r[c.k]??"";
+    if(c.t==="select") return `<td><select onchange="setRow('${f.p}',${ri},'${c.k}',this.value)">${["",...c.opts].filter((x,ix)=>!(ix>0&&x==="")).map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}</select></td>`;
+    if(c.t==="number") return `<td><input type="number" value="${val}" oninput="setRow('${f.p}',${ri},'${c.k}',this.value===''?null:+this.value)"></td>`;
+    return `<td><input type="text" value="${esc(val)}" oninput="setRow('${f.p}',${ri},'${c.k}',this.value)"></td>`;
+  }).join("")+`<td><button class="btn sm" onclick="delRow('${f.p}',${ri})">✕</button></td></tr>`).join("");
+  return `<table class="tbl"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
+  <button class="btn sm" onclick="addRow('${f.p}',${JSON.stringify(f.cols.map(c=>c.k)).replace(/"/g,"&quot;")})">+ Add row</button>`;
+}
+function renderMain(){
+  const sec=SECTIONS.find(s=>s.id===activeSection);
+  let html=`<div class="card"><h2>${sec.title}</h2><div class="sub">${sec.sub}</div>`;
+  if(sec.custom==="qual"){
+    html+=`<div class="scorebox">
+      <div class="scorecell"><div class="n" id="sc-bant">0</div><div class="l">BANT / 20</div></div>
+      <div class="scorecell"><div class="n" id="sc-medd">0</div><div class="l">MEDDPICC / 80</div></div>
+      <div class="scorecell"><div class="n" id="sc-tot">0</div><div class="l">Total / 100</div></div>
+      <div class="scorecell"><div style="margin-top:6px"><span class="band Nurture" id="sc-band">Nurture</span></div><div class="l">Maturity band</div></div>
+    </div>
+    <div class="help" style="margin-bottom:14px">Bands: 80+ Commit · 60–79 Pursue · 40–59 Develop · &lt;40 Nurture. Below 8 on BANT, stop and requalify before investing workshop time.</div>`;
+  }
+  if(sec.custom==="vmw"){
+    html+=`<div class="computed" id="vmw-computed"></div>`;
+  }
+  if(sec.custom==="review"){
+    html+=`<div id="gaplist"></div><hr style="border:none;border-top:1px solid var(--line);margin:16px 0">`;
+  }
+  sec.fields.forEach((f,i)=>{ html+=fieldHTML(f,i); });
+  if(sec.custom==="review"){
+    html+=`<div class="help" style="margin-top:10px">Next step: Export JSON, then open <b>recommendation-engine.html</b> and load the file (or use "Load last autosave" if on the same browser).</div>`;
+  }
+  html+="</div>";
+  document.getElementById("main").innerHTML=html;
+  updateDerived();
+}
+function renderAll(){ renderNav(); renderMain(); }
+
+function updateDerived(){
+  // header
+  document.getElementById("clientchip").textContent=state.meta.client_name?("· "+state.meta.client_name):"";
+  const pos=state.meta.positioning;
+  document.getElementById("postoggle").value=pos;
+  const pb=document.getElementById("posbadge");
+  pb.textContent=pos==="neutral"?"NEUTRAL":"RED HAT LENS";
+  pb.className="badge "+(pos==="neutral"?"neu":"rh");
+  // progress
+  const p=overallProgress();
+  document.getElementById("progfill").style.width=p+"%";
+  document.getElementById("progpct").textContent=p+"% complete · "+computeGaps().length+" gap"+(computeGaps().length===1?"":"s");
+  // scores
+  const el=id=>document.getElementById(id);
+  if(el("sc-bant")){ el("sc-bant").textContent=bantScore(); el("sc-medd").textContent=meddScore(); el("sc-tot").textContent=totalScore();
+    const b=band(); el("sc-band").textContent=b; el("sc-band").className="band "+b; }
+  // vmware computed
+  if(el("vmw-computed")){
+    if(state.vmware.present==="yes"){
+      const cores=vmwCores(), sockets=(+state.vmware.hosts||0)*(+state.vmware.sockets_per_host||0);
+      el("vmw-computed").innerHTML=`<b>Computed:</b> ${sockets} sockets · ${cores} physical cores · ${cores? "≈ "+Math.ceil(cores/2)+" core-pairs" :"—"} <span style="color:var(--mut)">(core-pair figure feeds subscription sizing in the BOQ Builder — directional until validated)</span>`;
+    } else el("vmw-computed").innerHTML="<b>Computed:</b> — (mark VMware present to size the estate)";
+  }
+  // visibility of showIf fields
+  document.querySelectorAll("[data-path]").forEach(div=>{
+    const f=SECTIONS.flatMap(s=>s.fields).find(x=>x.p===div.getAttribute("data-path"));
+    if(f&&f.showIf) div.classList.toggle("hidden",!fieldVisible(f));
+  });
+  // gaps
+  const gl=document.getElementById("gaplist");
+  if(gl){
+    const gaps=computeGaps();
+    gl.innerHTML=gaps.length
+      ? `<div style="font-weight:700;margin-bottom:8px">${gaps.length} gap flag${gaps.length===1?"":"s"} — resolve or log as assumptions before the proposal stage</div>`+
+        gaps.map(g=>`<div class="gap">⚠ <span><b>${g.section}</b> — ${g.field}</span></div>`).join("")
+      : `<div class="gap none">✔ <span>No critical gaps. Discovery record is complete enough to feed the Recommendation Engine and BOQ.</span></div>`;
+  }
+  renderNav();
+}
+
+/* ---------- mutation helpers ---------- */
+function toggleCheck(p,opt,on){ const a=(get(p)||[]).slice(); const i=a.indexOf(opt); if(on&&i<0)a.push(opt); if(!on&&i>=0)a.splice(i,1); set(p,a); }
+function addRow(p,keys){ const a=(get(p)||[]).slice(); const r={}; keys.forEach(k=>r[k]=""); a.push(r); set(p,a); renderMain(); }
+function delRow(p,i){ const a=(get(p)||[]).slice(); a.splice(i,1); set(p,a); renderMain(); }
+function setRow(p,i,k,v){ const a=get(p); a[i][k]=v; onChange(); }
+function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
+
+/* ---------- persistence ---------- */
+let saveTimer=null;
+function onChange(){
+  state.meta.updated=new Date().toISOString();
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{ localStorage.setItem(LS_KEY,JSON.stringify(state));
+    document.getElementById("savestat").textContent="Saved "+new Date().toLocaleTimeString(); },400);
+  updateDerived();
+}
+function snapshot(){
+  const s=JSON.parse(JSON.stringify(state));
+  s.qualification.scores={ bant:bantScore(), meddpicc:meddScore(), total:totalScore(), band:band() };
+  s.vmware.total_cores=vmwCores();
+  s.gaps=computeGaps();
+  return s;
+}
+function exportJSON(){
+  const s=snapshot();
+  const name=(s.meta.client_name||"engagement").toLowerCase().replace(/[^a-z0-9]+/g,"-")+".engagement.json";
+  download(name,JSON.stringify(s,null,2),"application/json");
+}
+function importJSON(ev){
+  const file=ev.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+      const data=JSON.parse(r.result);
+      if(!data.schema_version) throw new Error("Not an engagement file (missing schema_version).");
+      state=Object.assign(emptyState(),data);
+      // deep-merge safety for nested objects that may be absent in older files
+      onChange(); renderAll();
+      alert("Imported: "+(state.meta.client_name||file.name));
+    }catch(e){ alert("Import failed: "+e.message); } };
+  r.readAsText(file); ev.target.value="";
+}
+function resetAll(){ if(confirm("Clear all data? Export JSON first if you need a record.")){ state=emptyState(); localStorage.removeItem(LS_KEY); renderAll(); } }
+function download(name,content,mime){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download=name; a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ---------- report (print / PDF) ---------- */
+function reportHTML(){
+  const s=snapshot(); const m=s.meta;
+  const row=(k,v)=>`<tr><th style="width:32%">${k}</th><td>${esc(v??"—")||"—"}</td></tr>`;
+  const tag=t=>`<span class="tag">${t}</span>`;
+  let h=`<h1>Discovery Summary — ${esc(m.client_name||"Unnamed engagement")}</h1>
+  <div class="meta">${esc(m.industry||"")} · Engineer: ${esc(m.engineer||"—")} · Workshop: ${esc(m.workshop_date||"—")} · Positioning: ${m.positioning==="neutral"?"Neutral":"Red Hat default lens"} · Generated ${new Date().toISOString().slice(0,10)} · Schema v${s.schema_version}</div>`;
+  h+=`<h2>Qualification</h2><table><tr><th>BANT / 20</th><th>MEDDPICC / 80</th><th>Total / 100</th><th>Band</th></tr>
+  <tr><td>${s.qualification.scores.bant}</td><td>${s.qualification.scores.meddpicc}</td><td>${s.qualification.scores.total}</td><td><b>${s.qualification.scores.band}</b></td></tr></table>`;
+  h+=`<h2>Business context</h2><table>${row("Drivers",(s.business.drivers||[]).join(", "))}${row("Desired outcomes",s.business.outcomes)}${row("Constraints",s.business.constraints)}${row("Budget range",s.business.budget_range)}${row("Decision timeline",s.business.decision_timeline)}${row("Success criteria",s.business.success_criteria)}</table>`;
+  if((s.stakeholders||[]).length){
+    h+=`<h2>Stakeholders</h2><table><tr><th>Name</th><th>Role</th><th>Influence</th><th>Disposition</th><th>Notes</th></tr>`+
+    s.stakeholders.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.role)}</td><td>${esc(x.influence)}</td><td>${esc(x.disposition)}</td><td>${esc(x.notes)}</td></tr>`).join("")+`</table>`;
+  }
+  const e=s.technical.estate;
+  h+=`<h2>Current estate</h2><table>${row("Virtualization",e.virtualization_platform)}${row("Physical hosts",e.physical_hosts)}${row("Total VMs",e.total_vms)}${row("Storage",e.storage_platform)}${row("Network",e.network)}${row("Backup",e.backup)}${row("Monitoring",e.monitoring)}${row("Guest OS mix",e.os_mix)}${row("Databases / middleware",e.databases)}</table>`;
+  if((s.technical.workloads||[]).length){
+    h+=`<h2>Workloads</h2><table><tr><th>Workload</th><th>Type</th><th>Count</th><th>Criticality</th><th>Modernize?</th><th>Notes</th></tr>`+
+    s.technical.workloads.map(w=>`<tr><td>${esc(w.name)}</td><td>${esc(w.type)}</td><td>${esc(w.count)}</td><td>${esc(w.criticality)}</td><td>${esc(w.modernization_candidate)}</td><td>${esc(w.notes)}</td></tr>`).join("")+`</table>`;
+  }
+  h+=`<h2>Compliance, growth, DR</h2><table>${row("Compliance scope",(s.technical.compliance||[]).join(", "))}${row("Data residency",s.technical.data_residency)}${row("Container ambition",s.technical.container_ambition)}${row("Apps for containerization",s.technical.container_apps_count)}${row("Growth % / yr",s.technical.growth.vm_growth_pct)}${row("Horizon (yrs)",s.technical.growth.horizon_years)}${row("RPO",s.technical.dr.rpo)}${row("RTO",s.technical.dr.rto)}${row("DR site",s.technical.dr.dr_site)}</table>`;
+  h+=`<h2>Pain points</h2><p>${esc(s.technical.pain_points||"—")}</p>`;
+  if(s.vmware.present==="yes"){
+    const v=s.vmware;
+    h+=`<h2>VMware estate</h2><table>${row("Hosts",v.hosts)}${row("Sockets/host",v.sockets_per_host)}${row("Cores/socket",v.cores_per_socket)}${row("Total physical cores",v.total_cores)}${row("VMs (total / powered on)",(v.vms_total??"—")+" / "+(v.vms_powered_on??"—"))}${row("Avg vCPU / vRAM GB",(v.avg_vcpu??"—")+" / "+(v.avg_vram_gb??"—"))}${row("vCenter / ESXi",(v.vcenter_version||"—")+" / "+(v.esxi_version||"—"))}${row("Products",(v.products||[]).join(", "))}${row("Licensing status",v.ela_status)}${row("Renewal date",v.renewal_date)}${row("Last renewal quote (USD)",v.renewal_quote_usd)}${row("Quoted uplift %",v.uplift_pct)}${row("VMware pain",v.pain)}</table>`;
+  } else if(s.vmware.present==="no"){ h+=`<h2>VMware estate</h2><p>No VMware in the estate.</p>`; }
+  const gaps=s.gaps||[];
+  h+=`<h2>Gap flags (${gaps.length})</h2>`+(gaps.length?`<table><tr><th>Section</th><th>Missing / weak</th></tr>`+gaps.map(g=>`<tr><td>${esc(g.section)}</td><td>${esc(g.field)}</td></tr>`).join("")+`</table>`:"<p>None. Record is workshop-complete.</p>");
+  const as=s.assumptions||[];
+  h+=`<h2>Assumptions log (${as.length})</h2>`+(as.length?`<table><tr><th>Assumption</th><th>Source</th><th>Tag</th></tr>`+as.map(a=>`<tr><td>${esc(a.text)}</td><td>${esc(a.source)}</td><td>${tag(esc(a.tag||"input"))}</td></tr>`).join("")+`</table>`:"<p>No assumptions logged yet.</p>");
+  h+=`<p style="margin-top:14px;font-size:10px;color:#666">Currency context: USD base. PKR conversions elsewhere in this toolkit use rate ${m.currency.pkr_rate} (updated ${m.currency.pkr_rate_updated}), indicative only, subject to prevailing rate on day of quotation, exclusive of applicable Pakistan taxes and duties unless the duty layer is enabled.</p>`;
+  return h;
+}
+function printReport(){ document.getElementById("report").innerHTML=reportHTML(); window.print(); }
+
+/* ---------- Word export ---------- */
+function exportWord(){
+  if(typeof docx==="undefined"){ alert("Word library not loaded (offline?). Use Print / PDF, or vendor docx.umd.js locally per the guide."); return; }
+  const s=snapshot(); const m=s.meta;
+  const {Document,Packer,Paragraph,TextRun,HeadingLevel,Table,TableRow,TableCell,WidthType,BorderStyle}=docx;
+  const H=(t,l)=>new Paragraph({heading:l||HeadingLevel.HEADING_1,children:[new TextRun({text:t,color:"151515"})],spacing:{before:240,after:80}});
+  const P=t=>new Paragraph({children:[new TextRun({text:String(t??"—"),size:20})],spacing:{after:60}});
+  const cell=(t,b)=>new TableCell({width:{size:50,type:WidthType.PERCENTAGE},children:[new Paragraph({children:[new TextRun({text:String(t??"—"),bold:!!b,size:18})]})]});
+  const kv=pairs=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:pairs.map(([k,v])=>new TableRow({children:[cell(k,true),cell(v)]}))});
+  const rows=(head,data)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
+    new TableRow({children:head.map(hh=>cell(hh,true))}),
+    ...data.map(r=>new TableRow({children:r.map(c=>cell(c))}))]});
+  const kids=[
+    new Paragraph({children:[new TextRun({text:"Discovery Summary",bold:true,size:48})],spacing:{after:40}}),
+    new Paragraph({children:[new TextRun({text:(m.client_name||"Unnamed engagement")+" · "+(m.industry||""),size:24,color:"6a6e73"})],spacing:{after:40}}),
+    new Paragraph({children:[new TextRun({text:"Engineer: "+(m.engineer||"—")+" · Workshop: "+(m.workshop_date||"—")+" · Positioning: "+(m.positioning==="neutral"?"Neutral":"Red Hat default lens")+" · Generated "+new Date().toISOString().slice(0,10)+" · Schema v"+s.schema_version,size:18,color:"6a6e73"})],spacing:{after:160}}),
+    H("Qualification"),
+    rows(["BANT / 20","MEDDPICC / 80","Total / 100","Band"],[[s.qualification.scores.bant,s.qualification.scores.meddpicc,s.qualification.scores.total,s.qualification.scores.band]]),
+    H("Business context"),
+    kv([["Drivers",(s.business.drivers||[]).join(", ")],["Desired outcomes",s.business.outcomes],["Constraints",s.business.constraints],["Budget range",s.business.budget_range],["Decision timeline",s.business.decision_timeline],["Success criteria",s.business.success_criteria]]),
+  ];
+  if((s.stakeholders||[]).length){ kids.push(H("Stakeholders"),rows(["Name","Role","Influence","Disposition","Notes"],s.stakeholders.map(x=>[x.name,x.role,x.influence,x.disposition,x.notes]))); }
+  const e=s.technical.estate;
+  kids.push(H("Current estate"),kv([["Virtualization",e.virtualization_platform],["Physical hosts",e.physical_hosts],["Total VMs",e.total_vms],["Storage",e.storage_platform],["Network",e.network],["Backup",e.backup],["Monitoring",e.monitoring],["Guest OS mix",e.os_mix],["Databases / middleware",e.databases]]));
+  if((s.technical.workloads||[]).length){ kids.push(H("Workloads"),rows(["Workload","Type","Count","Criticality","Modernize?","Notes"],s.technical.workloads.map(w=>[w.name,w.type,w.count,w.criticality,w.modernization_candidate,w.notes]))); }
+  kids.push(H("Compliance, growth, DR"),kv([["Compliance scope",(s.technical.compliance||[]).join(", ")],["Data residency",s.technical.data_residency],["Container ambition",s.technical.container_ambition],["Apps for containerization",s.technical.container_apps_count],["Growth % / yr",s.technical.growth.vm_growth_pct],["Horizon (yrs)",s.technical.growth.horizon_years],["RPO",s.technical.dr.rpo],["RTO",s.technical.dr.rto],["DR site",s.technical.dr.dr_site]]),
+    H("Pain points"),P(s.technical.pain_points));
+  if(s.vmware.present==="yes"){ const v=s.vmware;
+    kids.push(H("VMware estate"),kv([["Hosts",v.hosts],["Sockets per host",v.sockets_per_host],["Cores per socket",v.cores_per_socket],["Total physical cores",v.total_cores],["VMs total / powered on",(v.vms_total??"—")+" / "+(v.vms_powered_on??"—")],["Avg vCPU / vRAM GB",(v.avg_vcpu??"—")+" / "+(v.avg_vram_gb??"—")],["vCenter / ESXi",(v.vcenter_version||"—")+" / "+(v.esxi_version||"—")],["Products",(v.products||[]).join(", ")],["Licensing status",v.ela_status],["Renewal date",v.renewal_date],["Last renewal quote (USD)",v.renewal_quote_usd],["Quoted uplift %",v.uplift_pct],["VMware pain",v.pain]]));
+  } else if(s.vmware.present==="no"){ kids.push(H("VMware estate"),P("No VMware in the estate.")); }
+  const gaps=s.gaps||[];
+  kids.push(H("Gap flags ("+gaps.length+")"));
+  kids.push(gaps.length?rows(["Section","Missing / weak"],gaps.map(g=>[g.section,g.field])):P("None. Record is workshop-complete."));
+  const as=s.assumptions||[];
+  kids.push(H("Assumptions log ("+as.length+")"));
+  kids.push(as.length?rows(["Assumption","Source","Tag"],as.map(a=>[a.text,a.source,a.tag||"input"])):P("No assumptions logged yet."));
+  kids.push(new Paragraph({children:[new TextRun({text:"Currency context: USD base. PKR conversions in this toolkit use rate "+m.currency.pkr_rate+" (updated "+m.currency.pkr_rate_updated+"), indicative only, subject to prevailing rate on day of quotation, exclusive of applicable Pakistan taxes and duties unless the duty layer is enabled.",size:14,color:"888888"})],spacing:{before:200}}));
+  const doc=new Document({sections:[{children:kids}]});
+  Packer.toBlob(doc).then(b=>{
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(b);
+    a.download=(m.client_name||"engagement").toLowerCase().replace(/[^a-z0-9]+/g,"-")+"-discovery-summary.docx";
+    a.click(); URL.revokeObjectURL(a.href);
+  });
+}
+
+/* ---------- boot ---------- */
+document.getElementById("postoggle").addEventListener("change",e=>set("meta.positioning",e.target.value));
+(function boot(){
+  const saved=localStorage.getItem(LS_KEY);
+  if(saved){ try{ state=Object.assign(emptyState(),JSON.parse(saved)); }catch(e){} }
+  renderAll();
+})();
+</script>
+</body>
+</html>

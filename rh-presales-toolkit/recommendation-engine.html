@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recommendation Engine | Pre-Sales Toolkit</title>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<style>
+:root{--rh:#ee0000;--ink:#151515;--mut:#6a6e73;--bg:#f2f2f2;--card:#fff;--ok:#3e8635;--warn:#f0ab00;--line:#d2d2d2;--blue:#0066cc}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+header{background:var(--ink);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:16px;font-weight:600}
+header .brandbar{width:6px;height:28px;background:var(--rh);border-radius:2px}
+header .sp{flex:1}
+.badge{padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+.badge.rh{background:var(--rh);color:#fff}.badge.neu{background:#4394e5;color:#fff}
+main{max-width:1000px;margin:0 auto;padding:24px 20px 80px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px;margin-bottom:16px}
+.card h2{font-size:16px;margin-bottom:4px}
+.card .sub{color:var(--mut);font-size:12px;margin-bottom:14px}
+.btn{display:inline-block;border:1px solid var(--line);background:#fff;border-radius:4px;padding:7px 14px;font-size:13px;cursor:pointer;font-weight:600}
+.btn:hover{background:#f5f5f5}
+.btn.pri{background:var(--rh);border-color:var(--rh);color:#fff}
+.btn.pri:hover{background:#c00}
+.hidden{display:none!important}
+.fitrow{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.fitrow .lbl{width:90px;font-weight:700;font-size:13px}
+.fitbar{flex:1;height:20px;background:#e8e8e8;border-radius:10px;overflow:hidden}
+.fitfill{height:100%;border-radius:10px;transition:width .5s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:11px;font-weight:700;min-width:34px}
+.fp{background:var(--rh)}.fpub{background:var(--blue)}.fh{background:#5752d1}
+.reco{border-left:5px solid var(--rh);background:#fff5f5;padding:14px 16px;border-radius:0 6px 6px 0;margin:12px 0}
+.reco.neu{border-left-color:var(--blue);background:#f0f7ff}
+.reco h3{font-size:15px;margin-bottom:6px}
+.reco ul{margin:6px 0 0 18px}
+.reco li{margin-bottom:4px;font-size:13px}
+.cav{border-left:4px solid var(--warn);background:#fdf7e7;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:8px;font-size:13px}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0}
+table.tbl th{text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:2px solid var(--line);font-size:11px;text-transform:uppercase;color:var(--mut)}
+table.tbl td{padding:6px 8px;border-bottom:1px solid #eee}
+.pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff}
+.pill.private{background:var(--rh)}.pill.public{background:var(--blue)}.pill.hybrid{background:#5752d1}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;font-size:12.5px}
+.kv div{background:#fafafa;border:1px solid #eee;border-radius:4px;padding:6px 10px}
+.kv b{display:block;font-size:10.5px;text-transform:uppercase;color:var(--mut);letter-spacing:.03em}
+textarea#paste{width:100%;min-height:80px;border:1px solid var(--line);border-radius:4px;padding:8px;font-family:monospace;font-size:11px}
+#report{display:none}
+@media print{
+  header,main{display:none!important}
+  #report{display:block;font-size:12px;color:#000}
+  #report h1{font-size:20px;border-bottom:3px solid #ee0000;padding-bottom:6px;margin-bottom:4px}
+  #report h2{font-size:14px;margin:16px 0 6px;border-bottom:1px solid #ccc;padding-bottom:3px}
+  #report table{width:100%;border-collapse:collapse;margin:6px 0}
+  #report th,#report td{border:1px solid #bbb;padding:4px 7px;text-align:left;font-size:11px}
+  #report th{background:#f0f0f0}
+  #report .meta{color:#555;font-size:11px;margin-bottom:10px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brandbar"></div>
+  <h1>Recommendation Engine</h1>
+  <span id="clientchip" style="font-size:13px;color:#b8bbbe"></span>
+  <span class="sp"></span>
+  <span id="posbadge" class="badge rh hidden">RED HAT LENS</span>
+</header>
+<main>
+  <div class="card" id="loadcard">
+    <h2>Load discovery record</h2>
+    <div class="sub">Consumes engagement.json exported by the Discovery Console. The recommendation is appended to the same file, nothing is overwritten.</div>
+    <button class="btn pri" onclick="document.getElementById('file').click()">Load engagement.json</button>
+    <input type="file" id="file" accept=".json" class="hidden" onchange="loadFile(event)">
+    <button class="btn" onclick="loadLocal()">Load last autosave (same browser)</button>
+    <button class="btn" onclick="document.getElementById('pastewrap').classList.toggle('hidden')">Paste JSON</button>
+    <div id="pastewrap" class="hidden" style="margin-top:10px">
+      <textarea id="paste" placeholder='Paste engagement.json content here'></textarea>
+      <button class="btn" style="margin-top:6px" onclick="loadPaste()">Parse</button>
+    </div>
+    <div id="loaderr" style="color:var(--rh);font-size:13px;margin-top:8px"></div>
+  </div>
+  <div id="results" class="hidden"></div>
+</main>
+<div id="report"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Recommendation Engine — Phase 1 of the Pre-Sales Toolkit
+   Rule-based, fully transparent: every point traceable to a
+   discovery field. Consumes/extends engagement.json v1.x
+   ============================================================ */
+let S=null; // loaded engagement state
+let R=null; // computed recommendation
+
+const esc=x=>String(x??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const has=(arr,v)=>Array.isArray(arr)&&arr.includes(v);
+const num=v=>(v==null||v===""||isNaN(+v))?0:+v;
+
+/* ---------- scoring rules ----------
+   Each rule: dim (private|public|hybrid), pts, why, src (schema path), test(s) -> bool
+   Scores are additive per dimension, clamped 0–100. Transparent by design. */
+const RULES=[
+ // ---- Private fit
+ {dim:"private",pts:15,src:"technical.data_residency",why:"Data residency is mandated in-country",test:s=>s.technical.data_residency==="Mandated in-country"},
+ {dim:"private",pts:8, src:"technical.data_residency",why:"Preference for in-country data",test:s=>s.technical.data_residency==="Preference for in-country"},
+ {dim:"private",pts:10,src:"technical.compliance",why:"Data residency mandate in compliance scope",test:s=>has(s.technical.compliance,"Data residency mandate")},
+ {dim:"private",pts:12,src:"technical.compliance",why:"Regulated frameworks in scope (ISO 27001 / PCI-DSS / central bank / HIPAA)",test:s=>["ISO 27001","PCI-DSS","Central bank / SBP guidelines","HIPAA"].some(c=>has(s.technical.compliance,c))},
+ {dim:"private",pts:10,src:"business.drivers",why:"Data sovereignty named as a business driver",test:s=>has(s.business.drivers,"Data sovereignty / residency")},
+ {dim:"private",pts:8, src:"business.drivers",why:"VMware exit / renewal pressure drives a like-for-like private replatform",test:s=>has(s.business.drivers,"VMware exit / renewal pressure")},
+ {dim:"private",pts:6, src:"vmware.present",why:"Existing VMware estate and operational model favor on-premises continuity",test:s=>s.vmware.present==="yes"},
+ {dim:"private",pts:8, src:"technical.estate.total_vms",why:"Estate ≥ 200 VMs, scale where private economics typically beat cloud list pricing",test:s=>num(s.technical.estate.total_vms)>=200},
+ {dim:"private",pts:4, src:"technical.estate.total_vms",why:"Estate ≥ 500 VMs, strong private economics",test:s=>num(s.technical.estate.total_vms)>=500},
+ {dim:"private",pts:5, src:"technical.workloads",why:"Mission-critical workloads present",test:s=>(s.technical.workloads||[]).some(w=>w.criticality==="Mission critical")},
+ {dim:"private",pts:4, src:"business.drivers",why:"Performance named as a driver (latency-sensitive estate)",test:s=>has(s.business.drivers,"Performance")},
+ {dim:"private",pts:4, src:"technical.dr.dr_site",why:"Existing warm/hot DR site indicates sunk DC investment",test:s=>["Warm","Hot / active-active"].includes(s.technical.dr.dr_site)},
+ {dim:"private",pts:-10,src:"business.drivers",why:"Data center exit is a stated driver (works against new on-prem investment)",test:s=>has(s.business.drivers,"Data center exit")},
+ // ---- Public fit
+ {dim:"public",pts:15,src:"business.drivers",why:"Data center exit is a stated driver",test:s=>has(s.business.drivers,"Data center exit")},
+ {dim:"public",pts:15,src:"technical.estate.virtualization_platform",why:"Estate is already public-cloud only",test:s=>s.technical.estate.virtualization_platform==="Public cloud only"},
+ {dim:"public",pts:8, src:"technical.estate.total_vms",why:"Small estate (< 100 VMs), private platform overhead is harder to justify",test:s=>num(s.technical.estate.total_vms)>0&&num(s.technical.estate.total_vms)<100},
+ {dim:"public",pts:8, src:"technical.growth.vm_growth_pct",why:"High growth (≥ 25%/yr) favors elastic capacity",test:s=>num(s.technical.growth.vm_growth_pct)>=25},
+ {dim:"public",pts:5, src:"business.drivers",why:"Agility / faster delivery named as a driver",test:s=>has(s.business.drivers,"Agility / faster delivery")},
+ {dim:"public",pts:6, src:"technical.compliance",why:"No compliance constraints identified",test:s=>has(s.technical.compliance,"None identified")},
+ {dim:"public",pts:5, src:"technical.container_ambition",why:"Committed container ambition with no residency constraint suits managed cloud services",test:s=>String(s.technical.container_ambition).startsWith("Committed")&&s.technical.data_residency!=="Mandated in-country"},
+ {dim:"public",pts:-15,src:"technical.data_residency",why:"In-country residency mandate constrains hyperscaler regions",test:s=>s.technical.data_residency==="Mandated in-country"},
+ // ---- Hybrid fit
+ {dim:"hybrid",pts:10,src:"technical.dr.dr_site",why:"Cloud DR pattern in place or planned",test:s=>s.technical.dr.dr_site==="Cloud DR"},
+ {dim:"hybrid",pts:8, src:"business.drivers",why:"DR / resilience improvement is a driver, cloud DR or stretched topology fits",test:s=>has(s.business.drivers,"DR / resilience improvement")},
+ {dim:"hybrid",pts:6, src:"technical.container_ambition",why:"Platform-level container strategy benefits from one substrate across on-prem and cloud",test:s=>s.technical.container_ambition==="Committed — platform strategy"},
+ {dim:"hybrid",pts:8, src:"business.drivers",why:"VMware exit plus partial DC exit points to split placement",test:s=>has(s.business.drivers,"VMware exit / renewal pressure")&&has(s.business.drivers,"Data center exit")},
+ {dim:"hybrid",pts:5, src:"technical.growth.vm_growth_pct",why:"Moderate-to-high growth suits burst-to-cloud",test:s=>num(s.technical.growth.vm_growth_pct)>=15},
+];
+
+function score(){
+  const contrib=[];
+  const sc={private:0,public:0,hybrid:0};
+  RULES.forEach(r=>{ let hit=false; try{hit=!!r.test(S);}catch(e){}
+    if(hit){ sc[r.dim]+=r.pts; contrib.push({dim:r.dim,pts:r.pts,why:r.why,src:r.src}); } });
+  // hybrid synthesis bonus: both worlds have real pull
+  if(sc.private>=35&&sc.public>=25){ sc.hybrid+=12; contrib.push({dim:"hybrid",pts:12,why:"Both private and public dimensions score materially, split placement is credible",src:"derived"}); }
+  Object.keys(sc).forEach(k=>sc[k]=Math.max(0,Math.min(100,sc[k])));
+  return {scores:sc,contrib};
+}
+
+function pickModel(sc){
+  const entries=Object.entries(sc).sort((a,b)=>b[1]-a[1]);
+  const [top,second]=entries;
+  // hybrid tie-break: if hybrid within 8 points of the leader and leader isn't hybrid, prefer hybrid when both underlying dims are non-trivial
+  if(top[0]!=="hybrid"&&sc.hybrid>=top[1]-8&&sc.private>=30&&sc.public>=20) return {model:"hybrid",reason:"Hybrid scores within 8 points of the leading model while both private and public dimensions show real pull. A split placement avoids forcing one answer onto two workload classes."};
+  return {model:top[0],reason:top[0].charAt(0).toUpperCase()+top[0].slice(1)+" fit leads by "+(top[1]-second[1])+" points."};
+}
+
+function platformReco(model){
+  const t=S.technical, v=S.vmware;
+  const amb=String(t.container_ambition||"");
+  const committed=amb.startsWith("Committed");
+  const platformStrategy=amb==="Committed — platform strategy";
+  const multiSite=["Warm","Hot / active-active","Cloud DR"].includes(t.dr.dr_site)||model==="hybrid";
+  const neutral=S.meta.positioning==="neutral";
+  const platforms=[],just=[],caveats=[],honesty=[];
+
+  // ---- honesty checks first (they apply in both lenses)
+  const vms=num(t.estate.total_vms);
+  if(vms>0&&vms<50&&(amb===""||amb==="None")&&!["Mandated in-country","Preference for in-country"].includes(t.data_residency)&&!["ISO 27001","PCI-DSS","Central bank / SBP guidelines","HIPAA","Data residency mandate"].some(c=>has(t.compliance,c))){
+    honesty.push("Estate is under 50 VMs with no container ambition and no compliance or residency constraint. A dedicated private platform, OpenShift included, is likely heavier than this client needs. Consider managed public cloud or staying on the incumbent until scale or modernization demand justifies a platform.");
+  }
+  const q=S.qualification&&S.qualification.scores?S.qualification.scores:null;
+  if(q&&q.total<40) honesty.push("Qualification band is Nurture ("+q.total+"/100). Treat this recommendation as directional input for nurture conversations, not as a proposal basis.");
+  if((S.gaps||[]).length>0) caveats.push((S.gaps||[]).length+" discovery gap flag(s) open. Resolve or log as assumptions before this recommendation goes into a proposal.");
+  if(v.present==="yes"&&(v.renewal_quote_usd==null||v.renewal_quote_usd==="")) caveats.push("No VMware renewal quote captured. The status quo TCO scenario will rely on a directional estimate until a real quote is logged.");
+
+  if(neutral){
+    // ---- neutral lens: candidates per category, criteria-led, no default vendor
+    if(model!=="public"){
+      platforms.push({name:"Virtualization platform — shortlist",detail:"OpenShift Virtualization, Nutanix AHV, Microsoft Hyper-V, Proxmox VE. Shortlist against: migration tooling from the incumbent, multi-tenancy and RBAC depth, ecosystem/backup support, subscription economics at "+(vms||"—")+" VMs, and operational skills fit."});
+      if(committed) platforms.push({name:"Container platform — shortlist",detail:"OpenShift Container Platform, SUSE Rancher (RKE2), VMware Tanzu, upstream Kubernetes. Shortlist against: lifecycle automation, built-in security posture, supportability, and total operating cost including the platform team you must staff."});
+    } else {
+      platforms.push({name:"Public cloud — shortlist",detail:"AWS, Azure, GCP, evaluated per workload. Managed Kubernetes (EKS/AKS/GKE) where container ambition is committed. Weigh egress, region availability against residency needs, and existing enterprise agreements."});
+    }
+    just.push("Neutral positioning selected: this output frames evaluation criteria and shortlists rather than a default vendor recommendation.");
+  } else {
+    // ---- Red Hat default lens
+    if(model==="private"||model==="hybrid"){
+      if(!committed){
+        platforms.push({name:"OpenShift Virtualization Engine (baseline)",detail:"Purpose-built for VM-only estates: KubeVirt-based virtualization on bare metal, subscription scoped to virtualization use. Clean upgrade path to OpenShift Container Platform when container ambition matures, no replatform required."});
+        just.push("Workload mix is VM-dominant with container ambition at '"+(amb||"not stated")+"'. Starting at Virtualization Engine keeps the entry cost at the virtualization tier while preserving the modernization path.");
+      } else {
+        platforms.push({name:"OpenShift Container Platform + OpenShift Virtualization",detail:"One control plane for VMs and containers. Runs the existing VM estate alongside the "+(num(t.container_apps_count)||"identified")+" containerization candidates without a second platform or second operational model."});
+        just.push("Container ambition is '"+amb+"'. A unified VM-and-container substrate avoids buying and staffing two platforms.");
+      }
+      if(v.present==="yes"){
+        platforms.push({name:"Migration Toolkit for Virtualization (MTV)",detail:"Included tooling for wave-based VMware-to-OpenShift migration: warm migration with pre-copy, vCenter inventory integration, network/storage mapping."});
+        just.push("VMware estate of "+(v.vms_total??"—")+" VMs, "+(v.total_cores??"—")+" cores, licensing status '"+(v.ela_status||"unknown")+"'. MTV is the default migration path; the phased playbook lands in Phase 3 TCO scenarios.");
+      }
+      if(multiSite||platformStrategy){
+        platforms.push({name:"RHACM + RHACS (OpenShift Platform Plus path)",detail:"Multi-cluster governance (RHACM) and container security (RHACS) across sites. If both are in scope, price the Platform Plus bundle rather than a la carte, evaluated in the BOQ Builder."});
+        just.push("Multi-site / DR topology ('"+(t.dr.dr_site||"—")+"') or platform-level strategy indicates more than one cluster from day one.");
+      }
+      if(model==="hybrid") platforms.push({name:"Hybrid substrate",detail:"Same OpenShift across on-prem and cloud (self-managed, or ROSA/ARO on the incumbent hyperscaler) for burst, DR, or dev-test placement. One skills base, one policy model via RHACM."});
+    }
+    if(model==="public"){
+      if(committed){
+        platforms.push({name:"ROSA or ARO (OpenShift on hyperscaler)",detail:"Managed OpenShift on AWS (ROSA) or Azure (ARO), aligned to the incumbent hyperscaler. Native cloud integration with the same platform API as any future on-prem footprint."});
+        just.push("Public fit leads and container ambition is committed. Managed OpenShift gives platform consistency without the platform team overhead. Confirm the incumbent hyperscaler in discovery, this record does not capture it explicitly.");
+      } else {
+        platforms.push({name:"Hyperscaler IaaS (vendor-neutral at framework layer)",detail:"Recommend the hyperscaler that fits workload, region, and commercial position. OpenShift is not forced here: for a VM-only, low-ambition estate moving to cloud, native IaaS with a landing zone is the simpler answer."});
+        honesty.push("Red Hat lens is on, but the honest read is that a VM-only public migration does not need OpenShift. Revisit if modernization ambition appears.");
+      }
+    }
+  }
+  return {platforms,just,caveats,honesty};
+}
+
+function analyze(){
+  const {scores,contrib}=score();
+  const {model,reason}=pickModel(scores);
+  const p=platformReco(model);
+  R={
+    generated:new Date().toISOString(),
+    engine_version:"1.0",
+    positioning_used:S.meta.positioning,
+    scores, model, model_reason:reason,
+    platforms:p.platforms, justification:p.just,
+    caveats:p.caveats, honesty_flags:p.honesty,
+    contributions:contrib
+  };
+  S.recommendation=R;
+  render();
+}
+
+/* ---------- rendering ---------- */
+function render(){
+  document.getElementById("clientchip").textContent="· "+(S.meta.client_name||"Unnamed");
+  const pb=document.getElementById("posbadge");
+  pb.classList.remove("hidden");
+  pb.textContent=S.meta.positioning==="neutral"?"NEUTRAL":"RED HAT LENS";
+  pb.className="badge "+(S.meta.positioning==="neutral"?"neu":"rh");
+  const q=S.qualification&&S.qualification.scores?S.qualification.scores:{total:"—",band:"—"};
+  const sc=R.scores;
+  const bar=(lbl,cls,v)=>`<div class="fitrow"><span class="lbl">${lbl}</span><div class="fitbar"><div class="fitfill ${cls}" style="width:${v}%">${v}</div></div></div>`;
+  let h=`<div class="card"><h2>Discovery snapshot</h2><div class="kv">
+    <div><b>Client</b>${esc(S.meta.client_name)||"—"}</div>
+    <div><b>Industry</b>${esc(S.meta.industry)||"—"}</div>
+    <div><b>Qualification</b>${q.total}/100 · ${q.band}</div>
+    <div><b>Total VMs</b>${S.technical.estate.total_vms??"—"}</div>
+    <div><b>VMware</b>${S.vmware.present==="yes"?((S.vmware.vms_total??"?")+" VMs · "+(S.vmware.total_cores??"?")+" cores · "+esc(S.vmware.ela_status||"status unknown")):"none"}</div>
+    <div><b>Container ambition</b>${esc(S.technical.container_ambition)||"—"}</div>
+    <div><b>Residency</b>${esc(S.technical.data_residency)||"—"}</div>
+    <div><b>Gap flags</b>${(S.gaps||[]).length}</div>
+  </div></div>`;
+  h+=`<div class="card"><h2>Deployment model fit</h2><div class="sub">Rule-based, additive, clamped 0–100. Every point is listed in the contribution table below, nothing is hidden in a weighting.</div>
+    ${bar("Private","fp",sc.private)}${bar("Public","fpub",sc.public)}${bar("Hybrid","fh",sc.hybrid)}
+    <div style="margin-top:10px;font-size:13px"><b>Recommended model: ${R.model.toUpperCase()}</b> — ${esc(R.model_reason)}</div></div>`;
+  const neu=S.meta.positioning==="neutral";
+  h+=`<div class="card"><h2>Platform recommendation</h2><div class="sub">${neu?"Neutral lens: shortlists and criteria, no default vendor.":"Red Hat default lens: OpenShift recommended where fit is strong, and flagged where it is not."}</div>`;
+  R.platforms.forEach(p=>{ h+=`<div class="reco ${neu?"neu":""}"><h3>${esc(p.name)}</h3><div style="font-size:13px">${esc(p.detail)}</div></div>`; });
+  if(R.justification.length) h+=`<div style="margin-top:8px"><b style="font-size:13px">Why (traceable to discovery):</b><ul style="margin:6px 0 0 18px;font-size:13px">${R.justification.map(j=>`<li>${esc(j)}</li>`).join("")}</ul></div>`;
+  h+=`</div>`;
+  if(R.honesty_flags.length||R.caveats.length){
+    h+=`<div class="card"><h2>Caveats & honesty checks</h2>`;
+    R.honesty_flags.forEach(x=>h+=`<div class="cav"><b>Honesty check:</b> ${esc(x)}</div>`);
+    R.caveats.forEach(x=>h+=`<div class="cav">${esc(x)}</div>`);
+    h+=`</div>`;
+  }
+  h+=`<div class="card"><h2>Score contributions</h2><div class="sub">The traceability table a CTO can challenge line by line.</div>
+  <table class="tbl"><thead><tr><th>Model</th><th>Points</th><th>Rule</th><th>Source field</th></tr></thead><tbody>
+  ${R.contributions.map(c=>`<tr><td><span class="pill ${c.dim}">${c.dim}</span></td><td><b>${c.pts>0?"+":""}${c.pts}</b></td><td>${esc(c.why)}</td><td style="font-family:monospace;font-size:11px">${esc(c.src)}</td></tr>`).join("")}
+  </tbody></table></div>`;
+  h+=`<div class="card"><h2>Export</h2>
+    <button class="btn pri" onclick="exportJSON()">Export updated engagement.json</button>
+    <button class="btn" onclick="exportWord()">Export Word (.docx)</button>
+    <button class="btn" onclick="printReport()">Print / PDF</button>
+    <div class="sub" style="margin-top:8px">The updated JSON now carries the recommendation section and feeds the Architecture Blueprint Generator and BOQ Builder in Phase 2.</div></div>`;
+  document.getElementById("results").innerHTML=h;
+  document.getElementById("results").classList.remove("hidden");
+}
+
+/* ---------- loading ---------- */
+function accept(data,label){
+  const err=document.getElementById("loaderr");
+  try{
+    if(!data.schema_version||!data.meta||!data.technical) throw new Error("This does not look like an engagement.json from the Discovery Console.");
+    S=data; err.textContent=""; analyze();
+  }catch(e){ err.textContent="Load failed ("+label+"): "+e.message; }
+}
+function loadFile(ev){ const f=ev.target.files[0]; if(!f)return;
+  const r=new FileReader(); r.onload=()=>{ try{accept(JSON.parse(r.result),f.name);}catch(e){document.getElementById("loaderr").textContent="Invalid JSON: "+e.message;} }; r.readAsText(f); ev.target.value=""; }
+function loadLocal(){ const raw=localStorage.getItem("presales.engagement.v1");
+  if(!raw){ document.getElementById("loaderr").textContent="No autosave found in this browser. Export JSON from the Discovery Console and load the file."; return; }
+  try{ const d=JSON.parse(raw);
+    // autosave lacks computed snapshot fields; derive minimal ones
+    if(!d.qualification.scores){ const b=d.qualification.bant,m=d.qualification.meddpicc;
+      const bs=num(b.budget)+num(b.authority)+num(b.need)+num(b.timeline);
+      const ms=["metrics","economic_buyer","decision_criteria","decision_process","paper_process","identified_pain","champion","competition"].reduce((s,k)=>s+num(m[k]),0);
+      const t=bs+ms; d.qualification.scores={bant:bs,meddpicc:ms,total:t,band:t>=80?"Commit":t>=60?"Pursue":t>=40?"Develop":"Nurture"}; }
+    if(d.vmware&&d.vmware.total_cores==null) d.vmware.total_cores=num(d.vmware.hosts)*num(d.vmware.sockets_per_host)*num(d.vmware.cores_per_socket);
+    accept(d,"autosave");
+  }catch(e){ document.getElementById("loaderr").textContent="Autosave unreadable: "+e.message; } }
+function loadPaste(){ try{ accept(JSON.parse(document.getElementById("paste").value),"pasted JSON"); }catch(e){ document.getElementById("loaderr").textContent="Invalid JSON: "+e.message; } }
+
+/* ---------- exports ---------- */
+function download(name,content,mime){ const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([content],{type:mime})); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
+function exportJSON(){
+  const name=(S.meta.client_name||"engagement").toLowerCase().replace(/[^a-z0-9]+/g,"-")+".engagement.json";
+  download(name,JSON.stringify(S,null,2),"application/json");
+}
+function reportHTML(){
+  const sc=R.scores;
+  let h=`<h1>Platform Recommendation — ${esc(S.meta.client_name||"Unnamed engagement")}</h1>
+  <div class="meta">${esc(S.meta.industry||"")} · Positioning: ${R.positioning_used==="neutral"?"Neutral":"Red Hat default lens"} · Engine v${R.engine_version} · Generated ${R.generated.slice(0,10)}</div>
+  <h2>Deployment model fit</h2><table><tr><th>Private</th><th>Public</th><th>Hybrid</th><th>Recommended</th></tr>
+  <tr><td>${sc.private}/100</td><td>${sc.public}/100</td><td>${sc.hybrid}/100</td><td><b>${R.model.toUpperCase()}</b></td></tr></table>
+  <p>${esc(R.model_reason)}</p><h2>Recommended platforms</h2><table><tr><th>Platform</th><th>Rationale</th></tr>
+  ${R.platforms.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.detail)}</td></tr>`).join("")}</table>`;
+  if(R.justification.length) h+=`<h2>Justification (traceable to discovery)</h2><ul>${R.justification.map(j=>`<li>${esc(j)}</li>`).join("")}</ul>`;
+  if(R.honesty_flags.length) h+=`<h2>Honesty checks</h2><ul>${R.honesty_flags.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  if(R.caveats.length) h+=`<h2>Caveats</h2><ul>${R.caveats.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  h+=`<h2>Score contributions</h2><table><tr><th>Model</th><th>Points</th><th>Rule</th><th>Source field</th></tr>
+  ${R.contributions.map(c=>`<tr><td>${c.dim}</td><td>${c.pts>0?"+":""}${c.pts}</td><td>${esc(c.why)}</td><td>${esc(c.src)}</td></tr>`).join("")}</table>`;
+  return h;
+}
+function printReport(){ document.getElementById("report").innerHTML=reportHTML(); window.print(); }
+function exportWord(){
+  if(typeof docx==="undefined"){ alert("Word library not loaded (offline?). Use Print / PDF, or vendor docx.umd.js locally per the guide."); return; }
+  const {Document,Packer,Paragraph,TextRun,HeadingLevel,Table,TableRow,TableCell,WidthType}=docx;
+  const H=t=>new Paragraph({heading:HeadingLevel.HEADING_1,children:[new TextRun({text:t})],spacing:{before:240,after:80}});
+  const P=t=>new Paragraph({children:[new TextRun({text:String(t??"—"),size:20})],spacing:{after:60}});
+  const cell=(t,b)=>new TableCell({children:[new Paragraph({children:[new TextRun({text:String(t??"—"),bold:!!b,size:18})]})]});
+  const rows=(head,data)=>new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
+    new TableRow({children:head.map(x=>cell(x,true))}),...data.map(r=>new TableRow({children:r.map(c=>cell(c))}))]});
+  const sc=R.scores;
+  const kids=[
+    new Paragraph({children:[new TextRun({text:"Platform Recommendation",bold:true,size:48})],spacing:{after:40}}),
+    new Paragraph({children:[new TextRun({text:(S.meta.client_name||"Unnamed engagement")+" · "+(S.meta.industry||""),size:24,color:"6a6e73"})],spacing:{after:40}}),
+    new Paragraph({children:[new TextRun({text:"Positioning: "+(R.positioning_used==="neutral"?"Neutral":"Red Hat default lens")+" · Engine v"+R.engine_version+" · Generated "+R.generated.slice(0,10),size:18,color:"6a6e73"})],spacing:{after:160}}),
+    H("Deployment model fit"),
+    rows(["Private","Public","Hybrid","Recommended"],[[sc.private+"/100",sc.public+"/100",sc.hybrid+"/100",R.model.toUpperCase()]]),
+    P(R.model_reason),
+    H("Recommended platforms"),
+    rows(["Platform","Rationale"],R.platforms.map(p=>[p.name,p.detail])),
+  ];
+  if(R.justification.length){ kids.push(H("Justification (traceable to discovery)")); R.justification.forEach(j=>kids.push(P("• "+j))); }
+  if(R.honesty_flags.length){ kids.push(H("Honesty checks")); R.honesty_flags.forEach(x=>kids.push(P("• "+x))); }
+  if(R.caveats.length){ kids.push(H("Caveats")); R.caveats.forEach(x=>kids.push(P("• "+x))); }
+  kids.push(H("Score contributions"),rows(["Model","Points","Rule","Source field"],R.contributions.map(c=>[c.dim,(c.pts>0?"+":"")+c.pts,c.why,c.src])));
+  const doc=new Document({sections:[{children:kids}]});
+  Packer.toBlob(doc).then(b=>{ const a=document.createElement("a");
+    a.href=URL.createObjectURL(b);
+    a.download=(S.meta.client_name||"engagement").toLowerCase().replace(/[^a-z0-9]+/g,"-")+"-recommendation.docx";
+    a.click(); URL.revokeObjectURL(a.href); });
+}
+</script>
+</body>
+</html>
